@@ -1,0 +1,84 @@
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@/modules/authentication/guards/authentication.guard';
+import { IsRoot } from '@/modules/authentication/guards/authentication.is-root.guard';
+import { AssetType } from '@prisma/client';
+import {
+    ApiConflictResponse,
+    ApiCreatedResponse,
+    ApiForbiddenResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { CreateAssetTypeDto } from '@/modules/asset-type/dto/create-asset-type.dto';
+import { AssetTypesService } from '@/modules/asset-type/asset-type.service';
+import { EditAssetTypeDto } from '@/modules/asset-type/dto/edit-asset-type.dto';
+import { DeleteAssetTypeDto } from '@/modules/asset-type/dto/delete-asset-type.dto';
+
+@Controller('asset-type')
+@UseGuards(AuthGuard)
+@ApiUnauthorizedResponse({ description: "Thrown when the user isn't authenticated" })
+@ApiForbiddenResponse({ description: 'This route can only be called from accounts with root access' })
+export class AssetTypesController {
+    constructor(private readonly assetTypesService: AssetTypesService) {}
+
+    @Post('create')
+    @UseGuards(IsRoot)
+    @ApiCreatedResponse({
+        description: 'Asset type created successfully',
+        example: {
+            assetType: {
+                id: 1,
+                name: 'test',
+                fields: [
+                    {
+                        id: 1,
+                        name: 'test',
+                    },
+                ],
+            },
+        },
+    })
+    async createAssetType(@Body() createAssetTypeDto: CreateAssetTypeDto) {
+        const assetType: AssetType = await this.assetTypesService.createAssetType(createAssetTypeDto);
+        return { assetType };
+    }
+
+    @Post('edit')
+    @UseGuards(IsRoot)
+    @ApiOkResponse({
+        description: 'Asset type updated successfully',
+        example: {
+            updatedAssetType: {
+                id: 1,
+                name: 'test',
+                fields: [
+                    {
+                        id: 1,
+                        name: 'test',
+                    },
+                ],
+            },
+        },
+    })
+    @ApiNotFoundResponse({ description: 'Asset type not found' })
+    @ApiConflictResponse({ description: 'Asset typ field could not be found (duplicate or invalid id)' })
+    @HttpCode(HttpStatus.OK)
+    async editAssetType(@Body() editAssetTypeDto: EditAssetTypeDto) {
+        const updatedAssetType = await this.assetTypesService.editAssetType(
+            editAssetTypeDto.assetTypeId,
+            editAssetTypeDto.updatedName,
+            editAssetTypeDto.updatedFields,
+        );
+        return { updatedAssetType };
+    }
+
+    @Post('delete')
+    @UseGuards(IsRoot)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiNotFoundResponse({ description: 'Not all asset types found or invalid ids provided' })
+    async deleteAssetType(@Body() deleteAssetTypeDto: DeleteAssetTypeDto) {
+        await this.assetTypesService.deleteAssetType(deleteAssetTypeDto.assetTypeIds);
+        return;
+    }
+}

@@ -10,7 +10,8 @@ build/
 .next/
 out/
 .cache/
-turbo/
+.turbo/
+
 
 # Vite
 *.local
