@@ -1,19 +1,22 @@
 import { ChevronDown, Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem
 } from "@/components/ui/sidebar"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Collapsible } from "@radix-ui/react-collapsible"
 
 export type SidebarItem = {
@@ -71,7 +74,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {sidebarItems.map((item) => {
                 if (item.children) {
-                    return <Collapsible key={item.title} className="group/collapsible" defaultOpen>
+                    return <Collapsible key={item.title} className="group/collapsible">
                         <CollapsibleTrigger className="w-full">
                             <SidebarMenuButton asChild className="w-full">
                                 <div className="flex items-center">
@@ -112,6 +115,13 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <div className="flex items-center justify-center gap-2 m-2 mx-5">
+          <ThemeToggle />
+          <Button className="w-full">Logout</Button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }

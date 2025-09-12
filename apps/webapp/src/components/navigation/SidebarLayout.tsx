@@ -1,6 +1,6 @@
 import { AppSidebar, sidebarItems, type SidebarItem } from '@/components/navigation/AppSidebar'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarFooter, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useMemo } from 'react'
 
 const SIDEBAR_WIDTH = '16rem'
@@ -36,12 +36,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <Breadcrumb>
                         <BreadcrumbList>
                             {pages?.map((page, i) => (
-                                <>
+                                <div key={page.title} className='w-fit flex items-center gap-2'>
                                     <BreadcrumbItem key={page.title}>
                                         <BreadcrumbLink href={!page.children ? page.url : undefined}>{page.title}</BreadcrumbLink>
                                     </BreadcrumbItem>
                                     {i < pages.length - 1 && <BreadcrumbSeparator />}
-                                </>
+                                </div>
                             ))}
                         </BreadcrumbList>
                     </Breadcrumb>
