@@ -1,4 +1,4 @@
-import { Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from "lucide-react"
+import { ChevronDown, Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from "lucide-react"
 
 import { CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
@@ -74,9 +74,10 @@ export function AppSidebar() {
                     return <Collapsible key={item.title} className="group/collapsible" defaultOpen>
                         <CollapsibleTrigger className="w-full">
                             <SidebarMenuButton asChild className="w-full">
-                                <div>
+                                <div className="flex items-center">
                                     <item.icon />
                                     <span>{item.title}</span>
+                                    <ChevronDown className="ml-auto" />
                                 </div>
                             </SidebarMenuButton>
                         </CollapsibleTrigger>
