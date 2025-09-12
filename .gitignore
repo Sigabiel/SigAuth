@@ -17,6 +17,7 @@ out/
 *.local
 *.log
 vite.config.ts.timestamp*
+.env
 
 # React / shadcn
 *.DS_Store
