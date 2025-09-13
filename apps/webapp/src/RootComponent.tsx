@@ -3,7 +3,12 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { DefaultSessionContext, useSession } from '@/context/SessionContext'
 import { logout, request } from '@/lib/utils'
-import App from '@/routes/App'
+import { AccountsPage } from '@/routes/accounts/AccountsPage'
+import { AssetTypePage } from '@/routes/asset-types/AssetTypePage'
+import { AssetPage } from '@/routes/assets/AssetPage'
+import { ContainerPage } from '@/routes/container/ContainerPage'
+import HomePage from '@/routes/home/HomePage'
+import { SettingsPage } from '@/routes/settings/SettingsPage'
 import SignInPage from '@/routes/SignIn'
 import type { Session } from '@sigauth/prisma-wrapper/prisma-client'
 import dayjs from 'dayjs'
@@ -47,7 +52,12 @@ const RootComponent: React.FC = () => {
                         {session.account && init ? (
                             <Layout>
                                 <Routes>
-                                    <Route path="/" element={<App />} />
+                                    <Route path="/" element={<HomePage />} />
+                                    <Route path="/accounts" element={<AccountsPage />} />
+                                    <Route path="/asset/types" element={<AssetTypePage />} />
+                                    <Route path="/asset/instances" element={<AssetPage />} />
+                                    <Route path="/container" element={<ContainerPage />} />
+                                    <Route path="/settings" element={<SettingsPage />} />
                                 </Routes>
                             </Layout>
                         ) : init ? (

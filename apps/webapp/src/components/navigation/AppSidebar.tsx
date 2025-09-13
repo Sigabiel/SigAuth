@@ -25,6 +25,7 @@ export type SidebarItem = {
     title: string
     url: string
     icon: React.ElementType
+    disabled?: boolean
     children?: SidebarItem[]
 }
 
@@ -57,11 +58,12 @@ export const sidebarItems: SidebarItem[] = [
     {
         title: 'Mirror',
         url: '/mirror',
+        disabled: true,
         icon: FlipHorizontal,
     },
     {
         title: 'Settings',
-        url: '#',
+        url: '/settings',
         icon: Settings,
     },
 ]
@@ -96,10 +98,14 @@ export function AppSidebar() {
                                                     {item.children.map(subItem => (
                                                         <SidebarMenuSubItem
                                                             key={subItem.title}
-                                                            className="cursor-default"
+                                                            className={`${subItem.disabled ? 'cursor-not-allowed' : 'cursor-default'} ${window.location.pathname === subItem.url ? 'bg-accent' : ''}`}
                                                         >
                                                             <SidebarMenuSubButton asChild>
-                                                                <div onClick={() => navigate(subItem.url)}>
+                                                                <div
+                                                                    onClick={() =>
+                                                                        !subItem.disabled && navigate(subItem.url)
+                                                                    }
+                                                                >
                                                                     <subItem.icon />
                                                                     <span>{subItem.title}</span>
                                                                 </div>
@@ -112,9 +118,12 @@ export function AppSidebar() {
                                     )
                                 } else {
                                     return (
-                                        <SidebarMenuItem key={item.title} className="cursor-default">
+                                        <SidebarMenuItem
+                                            key={item.title}
+                                            className={`${item.disabled ? 'cursor-not-allowed' : 'cursor-default'} ${window.location.pathname === item.url ? 'bg-accent' : ''}`}
+                                        >
                                             <SidebarMenuButton asChild>
-                                                <div onClick={() => navigate(item.url)}>
+                                                <div onClick={() => !item.disabled && navigate(item.url)}>
                                                     <item.icon />
                                                     <span>{item.title}</span>
                                                 </div>
