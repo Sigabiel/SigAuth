@@ -1,5 +1,6 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Request } from 'express';
 
 @Injectable()
@@ -25,11 +26,11 @@ export class AuthGuard implements CanActivate {
             },
         });
 
-        if (!session) {
+        if (!session || session.expire < Math.floor(Date.now() / 1000)) {
             throw new UnauthorizedException('Invalid session');
         }
 
-        request.account = session.account;
+        request.account = session.account as AccountWithPermissions;
         return true;
     }
 }
