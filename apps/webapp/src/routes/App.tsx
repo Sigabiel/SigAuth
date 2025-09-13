@@ -1,4 +1,3 @@
-import Layout from "@/components/navigation/SidebarLayout"
 import { Button } from "@/components/ui/button"
 
 function App() {

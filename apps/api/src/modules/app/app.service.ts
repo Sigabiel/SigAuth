@@ -1,3 +1,9 @@
+import { PROTECTED } from '@/common/constants';
+import { PrismaService } from '@/common/prisma/prisma.service';
+import { Utils } from '@/common/utils';
+import { CreateAppDto } from '@/modules/app/dto/create-app.dto';
+import { EditAppDto } from '@/modules/app/dto/edit-app.dto';
+import { HttpService } from '@nestjs/axios';
 import {
     BadRequestException,
     Injectable,
@@ -6,15 +12,10 @@ import {
     RequestTimeoutException,
     UnprocessableEntityException,
 } from '@nestjs/common';
-import { PrismaService } from '@/common/prisma/prisma.service';
-import { Utils } from '@/common/utils';
-import { AppPermission, AppWebFetch } from '@/common/types/json-types';
-import { HttpService } from '@nestjs/axios';
+import { AppPermission, AppWebFetch } from '@sigauth/prisma-wrapper/json-types';
+import { App } from '@sigauth/prisma-wrapper/prisma-client';
+import dayjs from 'dayjs';
 import { firstValueFrom, retry, timeout } from 'rxjs';
-import * as dayjs from 'dayjs';
-import { PROTECTED } from '@/common/constants';
-import { CreateAppDto } from '@/modules/app/dto/create-app.dto';
-import { EditAppDto } from '@/modules/app/dto/edit-app.dto';
 
 const APP_FETCH_ROUTE = '/connect-config.json';
 const APP_NUDGE_ROUTE = '/api/connect/nudge';
@@ -28,7 +29,7 @@ export class AppsService {
         private readonly httpService: HttpService,
     ) {}
 
-    async createApp(createAppDto: CreateAppDto) {
+    async createApp(createAppDto: CreateAppDto): Promise<App> {
         let appToken: string = '';
         do {
             appToken = Utils.generateToken(64);
@@ -59,7 +60,7 @@ export class AppsService {
         return app;
     }
 
-    async editApp(editAppDto: EditAppDto) {
+    async editApp(editAppDto: EditAppDto): Promise<App> {
         if (editAppDto.id == PROTECTED.App.id)
             throw new BadRequestException('You can not edit the SigAuth app, please create a new one');
 
@@ -106,7 +107,7 @@ export class AppsService {
         for (const id of appIds) {
             const containers = await this.prisma.container.findMany({ where: { apps: { array_contains: { id } } } });
             for (const container of containers) {
-                container.apps = (container.apps as number[]).filter((c) => c !== id);
+                container.apps = (container.apps as number[]).filter(c => c !== id);
                 await this.prisma.container.update({ where: { id: container.id }, data: { apps: container.apps } });
             }
         }
@@ -117,7 +118,7 @@ export class AppsService {
     async clearDeletedPermissions(appId: number, oldPermissions: AppPermission, newPermissions: AppPermission) {
         const oldPerms = Object.values(oldPermissions).flat();
         const newPerms = Object.values(newPermissions).flat();
-        const removed = oldPerms.filter((p) => !newPerms.includes(p)).map((p) => Utils.convertPermissionNameToIdent(p));
+        const removed = oldPerms.filter(p => !newPerms.includes(p)).map(p => Utils.convertPermissionNameToIdent(p));
         await this.prisma.permissionInstance.deleteMany({ where: { identifier: { in: removed }, appId } });
     }
 
@@ -139,9 +140,9 @@ export class AppsService {
                 !Array.isArray(perms.root) ||
                 !Array.isArray(perms.container) ||
                 !Array.isArray(perms.asset) ||
-                perms.root.some((r) => typeof r != 'string') ||
-                perms.container.some((r) => typeof r != 'string') ||
-                perms.asset.some((r) => typeof r != 'string')
+                perms.root.some(r => typeof r != 'string') ||
+                perms.container.some(r => typeof r != 'string') ||
+                perms.asset.some(r => typeof r != 'string')
             )
                 throw new UnprocessableEntityException('Fetched permissions have invalid format');
             return {

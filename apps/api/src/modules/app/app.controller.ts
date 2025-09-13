@@ -1,6 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { AppsService } from '@/modules/app/app.service';
+import { CreateAppDto } from '@/modules/app/dto/create-app.dto';
+import { DeleteAppDto } from '@/modules/app/dto/delete-app.dto';
+import { EditAppDto } from '@/modules/app/dto/edit-app.dto';
 import { AuthGuard } from '@/modules/authentication/guards/authentication.guard';
 import { IsRoot } from '@/modules/authentication/guards/authentication.is-root.guard';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import {
     ApiCreatedResponse,
     ApiForbiddenResponse,
@@ -10,10 +14,7 @@ import {
     ApiRequestTimeoutResponse,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { AppsService } from '@/modules/app/app.service';
-import { CreateAppDto } from '@/modules/app/dto/create-app.dto';
-import { EditAppDto } from '@/modules/app/dto/edit-app.dto';
-import { DeleteAppDto } from '@/modules/app/dto/delete-app.dto';
+import { App } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('app')
 @UseGuards(AuthGuard)
@@ -47,8 +48,8 @@ export class AppsController {
         description: 'Fetched permissions have invalid format (e.g. root is not an array of strings, etc.',
     })
     @ApiForbiddenResponse({ description: 'Forbidden' })
-    async createApp(@Body() createAppDto: CreateAppDto) {
-        return { app: await this.appsService.createApp(createAppDto) };
+    async createApp(@Body() createAppDto: CreateAppDto): Promise<App> {
+        return await this.appsService.createApp(createAppDto);
     }
 
     @Post('edit')
@@ -80,8 +81,8 @@ export class AppsController {
     })
     @ApiForbiddenResponse({ description: 'Forbidden' })
     @ApiNotFoundResponse({ description: 'App not found' })
-    async editApp(@Body() editAppDto: EditAppDto) {
-        return { app: await this.appsService.editApp(editAppDto) };
+    async editApp(@Body() editAppDto: EditAppDto): Promise<App> {
+        return await this.appsService.editApp(editAppDto);
     }
 
     @Post('delete')

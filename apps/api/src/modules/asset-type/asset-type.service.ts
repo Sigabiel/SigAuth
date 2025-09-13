@@ -1,14 +1,15 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@/common/prisma/prisma.service';
-import { AssetFieldType, AssetTypeField } from '@/common/types/json-types';
 import { PROTECTED } from '@/common/constants';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { CreateAssetTypeDto } from '@/modules/asset-type/dto/create-asset-type.dto';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { AssetFieldType, AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
+import { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Injectable()
 export class AssetTypesService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async createAssetType(createAssetTypeDto: CreateAssetTypeDto) {
+    async createAssetType(createAssetTypeDto: CreateAssetTypeDto): Promise<AssetType> {
         const normalizedFields = createAssetTypeDto.fields.map((f, i) => {
             f.id = i;
             return f;
@@ -25,7 +26,7 @@ export class AssetTypesService {
     /*
         This is a really heavy task and scales badly with the amount of asset being created
      */
-    async editAssetType(targetId: number, updatedName: string, updatedFields: AssetTypeField[]) {
+    async editAssetType(targetId: number, updatedName: string, updatedFields: AssetTypeField[]): Promise<AssetType> {
         const target = await this.prisma.assetType.findFirst({ where: { id: targetId } });
         if (!target) throw new NotFoundException('Asset type not found');
         const currentFields = target.fields as unknown as AssetTypeField[];
@@ -38,9 +39,9 @@ export class AssetTypesService {
             if (newField.id == null) {
                 newField.id = ++highestFieldId;
             } else {
-                if (currentFieldsCache.find((f) => f.id == newField.id)) {
+                if (currentFieldsCache.find(f => f.id == newField.id)) {
                     currentFieldsCache.splice(
-                        currentFieldsCache.findIndex((f) => f.id == newField.id),
+                        currentFieldsCache.findIndex(f => f.id == newField.id),
                         1,
                     ); // remove from currentField cache to prevent multiple fields being added with the same already existing id
                 } else {
@@ -62,12 +63,11 @@ export class AssetTypesService {
         });
 
         // update asset according to field changes
-        const addedFields = newFields.filter((f) => !currentFields.find((cf) => cf.id == f.id)); // that are only in the new field
-        const removedFields = currentFields.filter((cf) => !newFields.find((nf) => nf.id == cf.id)); // that are only in the old fields
-        const editedFields = newFields.filter((f) =>
+        const addedFields = newFields.filter(f => !currentFields.find(cf => cf.id == f.id)); // that are only in the new field
+        const removedFields = currentFields.filter(cf => !newFields.find(nf => nf.id == cf.id)); // that are only in the old fields
+        const editedFields = newFields.filter(f =>
             currentFields.find(
-                (cf) =>
-                    cf.id == f.id && ((cf.required != f.required && f.required) || (cf.type != f.type && f.required)),
+                cf => cf.id == f.id && ((cf.required != f.required && f.required) || (cf.type != f.type && f.required)),
             ),
         ); // that are in both maps and are now required or type changed
 
@@ -88,7 +88,7 @@ export class AssetTypesService {
 
         for (const field of editedFields) {
             for (const asset of assets) {
-                Object.entries(asset.fields as Record<number, string | number>).forEach((e) => {
+                Object.entries(asset.fields as Record<number, string | number>).forEach(e => {
                     if (+e[0] == field.id && e[1] == undefined) {
                         e[1] = field.type === AssetFieldType.NUMBER ? 0 : ''; // set new default value
                     }
@@ -122,12 +122,12 @@ export class AssetTypesService {
         for (const type of assetTypes) {
             const assets = await this.prisma.asset.findMany({ where: { typeId: type.id } });
             for (const container of containers) {
-                container.assets = (container.assets as number[]).filter((id) => !assets.find((a) => a.id === id));
+                container.assets = (container.assets as number[]).filter(id => !assets.find(a => a.id === id));
             }
 
             await this.prisma.permissionInstance.deleteMany({
                 where: {
-                    assetId: { in: assets.map((a) => a.id) },
+                    assetId: { in: assets.map(a => a.id) },
                 },
             });
             await this.prisma.asset.deleteMany({ where: { typeId: type.id } });

@@ -1,8 +1,8 @@
 import { PROTECTED, SigAuthORPermissions, SigAuthRootPermissions } from '@/common/constants';
-import { AppPermission, AppWebFetch, AssetFieldType, AssetTypeField } from '@/common/types/json-types';
 import { Utils } from '@/common/utils';
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { AppPermission, AppWebFetch, AssetFieldType, AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
+import { PrismaClient } from '@sigauth/prisma-wrapper/prisma-client';
 import * as bcrypt from 'bcryptjs';
 import * as process from 'node:process';
 
@@ -12,7 +12,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     async onModuleInit() {
         await this.$connect();
-
         if ((await this.app.findFirst({ where: { id: PROTECTED.App.id } })) == null) {
             this.logger.warn('SigAuth app not found, instantiating app structure');
             await this.initializeAppStructure();

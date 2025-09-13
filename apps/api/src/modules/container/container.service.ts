@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@/common/prisma/prisma.service';
 import { PROTECTED } from '@/common/constants';
+import { PrismaService } from '@/common/prisma/prisma.service';
 import { AssetService } from '@/modules/asset/asset.service';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Asset, Container } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Injectable()
 export class ContainerService {
@@ -10,13 +11,17 @@ export class ContainerService {
         private readonly assetService: AssetService,
     ) {}
 
-    async createContainer(name: string, assets: number[], apps: number[]) {
+    async createContainer(
+        name: string,
+        assets: number[],
+        apps: number[],
+    ): Promise<{ container: Container; containerAsset: Asset }> {
         if (apps.includes(PROTECTED.App.id)) throw new BadRequestException('Cannot add protected app to container');
         // check if assets and apps actually exist
-        const assetCount = await this.prisma.asset.count({ where: { id: { in: assets.map((a) => a) } } });
+        const assetCount = await this.prisma.asset.count({ where: { id: { in: assets.map(a => a) } } });
         if (assetCount != assets.length) throw new NotFoundException('Invalid assets');
 
-        const appCount = await this.prisma.app.count({ where: { id: { in: apps.map((a) => a) } } });
+        const appCount = await this.prisma.app.count({ where: { id: { in: apps.map(a => a) } } });
         if (appCount != apps.length) throw new NotFoundException('Invalid apps');
 
         const container = await this.prisma.container.create({
@@ -48,24 +53,24 @@ export class ContainerService {
         return { container, containerAsset };
     }
 
-    async editContainer(containerId: number, name: string, assets: number[], apps: number[]) {
+    async editContainer(containerId: number, name: string, assets: number[], apps: number[]): Promise<Container> {
         if (apps.includes(PROTECTED.App.id)) throw new BadRequestException('Cannot add protected app to container');
         if (containerId == PROTECTED.Container.id) throw new BadRequestException('Cannot edit protected container');
 
         const container = await this.prisma.container.findUnique({ where: { id: containerId } });
         if (!container) throw new NotFoundException('Container not found');
 
-        const assetCount = await this.prisma.asset.count({ where: { id: { in: assets.map((a) => a) } } });
+        const assetCount = await this.prisma.asset.count({ where: { id: { in: assets.map(a => a) } } });
         if (assetCount != assets.length) throw new NotFoundException('Invalid assets');
 
-        const appCount = await this.prisma.app.count({ where: { id: { in: apps.map((a) => a) } } });
+        const appCount = await this.prisma.app.count({ where: { id: { in: apps.map(a => a) } } });
         if (appCount != apps.length) throw new NotFoundException('Invalid apps');
 
-        const removedApps = (container.apps as number[]).filter((a) => !apps.includes(a));
-        const removedAssets = (container.assets as number[]).filter((a) => !assets.includes(a));
+        const removedApps = (container.apps as number[]).filter(a => !apps.includes(a));
+        const removedAssets = (container.assets as number[]).filter(a => !assets.includes(a));
 
         if (removedApps.length > 0) {
-            this.prisma.permissionInstance.deleteMany({
+            await this.prisma.permissionInstance.deleteMany({
                 where: {
                     containerId,
                     appId: { in: removedApps },
@@ -74,7 +79,7 @@ export class ContainerService {
         }
 
         if (removedAssets.length > 0) {
-            this.prisma.permissionInstance.deleteMany({
+            await this.prisma.permissionInstance.deleteMany({
                 where: {
                     containerId,
                     assetId: { in: removedAssets },
@@ -138,14 +143,14 @@ export class ContainerService {
                         },
                         select: { id: true },
                     })
-                ).map((a) => a.id),
+                ).map(a => a.id),
             );
             await this.prisma.asset.deleteMany({ where: { id: { in: removedContainerAssets } } });
         }
         const permContainer = await this.prisma.container.findFirst({ where: { id: PROTECTED.Container.id } });
         await this.prisma.container.update({
             where: { id: PROTECTED.Container.id },
-            data: { assets: (permContainer?.assets as number[]).filter((a) => !removedContainerAssets.includes(a)) },
+            data: { assets: (permContainer?.assets as number[]).filter(a => !removedContainerAssets.includes(a)) },
         });
         await this.prisma.permissionInstance.deleteMany({
             where: {

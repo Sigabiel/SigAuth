@@ -2,7 +2,7 @@ import { UnauthorizedExceptionFilter } from '@/common/filters/unauthorized-excep
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -26,4 +26,6 @@ async function bootstrap() {
     await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap();
+bootstrap()
+    .then(() => console.log('API is running...'))
+    .catch(console.error);

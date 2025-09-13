@@ -1,10 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { AssetService } from '@/modules/asset/asset.service';
+import { CreateAssetDto } from '@/modules/asset/dto/create-asset.dto';
+import { DeleteAssetDto } from '@/modules/asset/dto/delete-asset.dto';
+import { EditAssetDto } from '@/modules/asset/dto/edit-asset.dto';
 import { AuthGuard } from '@/modules/authentication/guards/authentication.guard';
 import { IsRoot } from '@/modules/authentication/guards/authentication.is-root.guard';
-import { CreateAssetDto } from '@/modules/asset/dto/create-asset.dto';
-import { AssetService } from '@/modules/asset/asset.service';
-import { EditAssetDto } from '@/modules/asset/dto/edit-asset.dto';
-import { DeleteAssetDto } from '@/modules/asset/dto/delete-asset.dto';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import {
     ApiBadRequestResponse,
     ApiCreatedResponse,
@@ -14,6 +14,7 @@ import {
     ApiOkResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Asset } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('asset')
 @UseGuards(AuthGuard)
@@ -34,7 +35,7 @@ export class AssetController {
             statusCode: 400,
         },
     })
-    async createAsset(@Body() createAssetDto: CreateAssetDto) {
+    async createAsset(@Body() createAssetDto: CreateAssetDto): Promise<Asset> {
         const asset = await this.assetsService.createOrUpdateAsset(
             undefined,
             createAssetDto.name,
@@ -43,7 +44,7 @@ export class AssetController {
             false,
         );
 
-        return { asset };
+        return asset;
     }
 
     @Post('edit')
@@ -73,7 +74,7 @@ export class AssetController {
         },
     })
     @ApiNotFoundResponse({ description: 'Asset or asset type not found' })
-    async editAsset(@Body() editAssetDto: EditAssetDto) {
+    async editAsset(@Body() editAssetDto: EditAssetDto): Promise<Asset> {
         const asset = await this.assetsService.createOrUpdateAsset(
             editAssetDto.assetId,
             editAssetDto.name,
@@ -81,7 +82,7 @@ export class AssetController {
             editAssetDto.fields,
             false,
         );
-        return { asset };
+        return asset;
     }
 
     @Post('delete')

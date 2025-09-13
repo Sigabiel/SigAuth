@@ -2,6 +2,7 @@ import { PROTECTED, SigAuthRootPermissions } from '@/common/constants';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Utils } from '@/common/utils';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Request } from 'express';
 
 @Injectable()
@@ -12,7 +13,8 @@ export class IsRoot implements CanActivate {
         const request = context.switchToHttp().getRequest<Request>();
         if (!request.account) throw new UnauthorizedException('No account found');
 
-        return !!request.account.permissions.find(
+        const account: AccountWithPermissions = request.account as AccountWithPermissions;
+        return !!account.permissions.find(
             p =>
                 p.appId == PROTECTED.App.id &&
                 p.identifier == Utils.convertPermissionNameToIdent(SigAuthRootPermissions.ROOT),

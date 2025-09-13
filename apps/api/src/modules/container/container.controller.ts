@@ -14,6 +14,7 @@ import {
     ApiOkResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Container } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('container')
 @UseGuards(AuthGuard)
@@ -86,7 +87,7 @@ export class ContainerController {
             statusCode: 400,
         },
     })
-    async editContainer(@Body() editContainerDto: EditContainerDto) {
+    async editContainer(@Body() editContainerDto: EditContainerDto): Promise<Container> {
         return this.containerService.editContainer(
             editContainerDto.id,
             editContainerDto.name,

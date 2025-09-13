@@ -1,7 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { AssetTypesService } from '@/modules/asset-type/asset-type.service';
+import { CreateAssetTypeDto } from '@/modules/asset-type/dto/create-asset-type.dto';
+import { DeleteAssetTypeDto } from '@/modules/asset-type/dto/delete-asset-type.dto';
+import { EditAssetTypeDto } from '@/modules/asset-type/dto/edit-asset-type.dto';
 import { AuthGuard } from '@/modules/authentication/guards/authentication.guard';
 import { IsRoot } from '@/modules/authentication/guards/authentication.is-root.guard';
-import { AssetType } from '@prisma/client';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import {
     ApiConflictResponse,
     ApiCreatedResponse,
@@ -10,10 +13,7 @@ import {
     ApiOkResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CreateAssetTypeDto } from '@/modules/asset-type/dto/create-asset-type.dto';
-import { AssetTypesService } from '@/modules/asset-type/asset-type.service';
-import { EditAssetTypeDto } from '@/modules/asset-type/dto/edit-asset-type.dto';
-import { DeleteAssetTypeDto } from '@/modules/asset-type/dto/delete-asset-type.dto';
+import { AssetType } from '@prisma/client';
 
 @Controller('asset-type')
 @UseGuards(AuthGuard)
@@ -64,7 +64,7 @@ export class AssetTypesController {
     @ApiNotFoundResponse({ description: 'Asset type not found' })
     @ApiConflictResponse({ description: 'Asset typ field could not be found (duplicate or invalid id)' })
     @HttpCode(HttpStatus.OK)
-    async editAssetType(@Body() editAssetTypeDto: EditAssetTypeDto) {
+    async editAssetType(@Body() editAssetTypeDto: EditAssetTypeDto): Promise<{ updatedAssetType: AssetType }> {
         const updatedAssetType = await this.assetTypesService.editAssetType(
             editAssetTypeDto.assetTypeId,
             editAssetTypeDto.updatedName,

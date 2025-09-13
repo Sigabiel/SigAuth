@@ -1,0 +1,40 @@
+{
+    "name": "@sigauth/prisma-wrapper",
+    "version": "0.0.1",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "dev": "tsc --watch",
+        "build": "tsc",
+        "lint": "echo SKIPPING LINT ON PRISMA-WRAPPER"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./prisma": {
+            "import": "./dist/extended-prisma.js",
+            "types": "./dist/extended-prisma.d.ts",
+            "default": "./dist/extended-prisma.js"
+        },
+        "./prisma-client": {
+            "import": "./prisma/generated/client/index.js",
+            "types": "./prisma/generated/client/index.d.ts",
+            "default": "./prisma/generated/client/index.js"
+        },
+        "./json-types": {
+            "import": "./dist/json-types.js",
+            "types": "./dist/json-types.d.ts",
+            "default": "./dist/json-types.js"
+        }
+    },
+    "dependencies": {
+        "@prisma/client": "^6.11.1"
+    },
+    "devDependencies": {
+        "prisma": "^6.12.0",
+        "typescript": "latest"
+    }
+}

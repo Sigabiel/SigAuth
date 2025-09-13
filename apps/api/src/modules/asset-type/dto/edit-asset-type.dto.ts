@@ -1,8 +1,8 @@
-import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { AssetTypeField } from '@/common/types/json-types';
-import { ApiProperty } from '@nestjs/swagger';
 import { AssetTypeFieldDto } from '@/modules/asset-type/dto/create-asset-type.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
+import { Type } from 'class-transformer';
+import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
 
 export class EditAssetTypeDto {
     @IsNumber()

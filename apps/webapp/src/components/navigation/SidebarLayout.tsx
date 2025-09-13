@@ -1,10 +1,7 @@
 import { AppSidebar, sidebarItems, type SidebarItem } from '@/components/navigation/AppSidebar'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { SidebarFooter, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useMemo } from 'react'
-
-const SIDEBAR_WIDTH = '16rem'
-const SIDEBAR_WIDTH_MOBILE = '18rem'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const pages = useMemo(() => {

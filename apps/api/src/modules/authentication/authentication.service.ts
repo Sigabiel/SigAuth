@@ -3,10 +3,9 @@ import { Utils } from '@/common/utils';
 import { LoginRequestDto } from '@/modules/authentication/dto/login-request.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bycrypt from 'bcryptjs';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import * as process from 'node:process';
 import * as speakeasy from 'speakeasy';
-
 // TODO NÄCHSTER STEP UNIT tESTS
 
 @Injectable()
@@ -20,7 +19,7 @@ export class AuthenticationService {
         }
 
         // validate 2fa
-        if (account.secondFactor && !loginRequestDto.secondFactor) {
+        if (account.secondFactor && typeof loginRequestDto.secondFactor !== 'string') {
             throw new UnauthorizedException('2FA required');
         } else if (account.secondFactor) {
             const verified = speakeasy.totp.verify({
