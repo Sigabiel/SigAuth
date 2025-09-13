@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <main className="p-2">
+            <main className="p-2 w-full">
                 <div className="flex items-center gap-2">
                     <SidebarTrigger />
                     <Breadcrumb>
