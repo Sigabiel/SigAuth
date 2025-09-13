@@ -19,6 +19,7 @@ import {
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { logout } from '@/lib/utils'
 import { Collapsible } from '@radix-ui/react-collapsible'
+import { useNavigate } from 'react-router'
 
 export type SidebarItem = {
     title: string
@@ -66,6 +67,9 @@ export const sidebarItems: SidebarItem[] = [
 ]
 
 export function AppSidebar() {
+    const navigate = useNavigate()
+
+    // TODO this is shoud create children recursively currently it can only handle one level of children
     return (
         <Sidebar>
             <SidebarContent>
@@ -90,12 +94,15 @@ export function AppSidebar() {
                                             <CollapsibleContent>
                                                 <SidebarMenuSub>
                                                     {item.children.map(subItem => (
-                                                        <SidebarMenuSubItem key={subItem.title}>
+                                                        <SidebarMenuSubItem
+                                                            key={subItem.title}
+                                                            className="cursor-default"
+                                                        >
                                                             <SidebarMenuSubButton asChild>
-                                                                <a href={subItem.url}>
+                                                                <div onClick={() => navigate(subItem.url)}>
                                                                     <subItem.icon />
                                                                     <span>{subItem.title}</span>
-                                                                </a>
+                                                                </div>
                                                             </SidebarMenuSubButton>
                                                         </SidebarMenuSubItem>
                                                     ))}
@@ -105,12 +112,12 @@ export function AppSidebar() {
                                     )
                                 } else {
                                     return (
-                                        <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuItem key={item.title} className="cursor-default">
                                             <SidebarMenuButton asChild>
-                                                <a href={item.url}>
+                                                <div onClick={() => navigate(item.url)}>
                                                     <item.icon />
                                                     <span>{item.title}</span>
-                                                </a>
+                                                </div>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
                                     )

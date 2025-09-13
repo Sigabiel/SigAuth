@@ -1,7 +1,14 @@
 import { AppSidebar, sidebarItems, type SidebarItem } from '@/components/navigation/AppSidebar'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const pages = useMemo(() => {
@@ -22,7 +29,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }
 
         return findPath(sidebarItems, window.location.pathname)
-    }, [window.location.pathname])
+    }, [useNavigate()])
 
     return (
         <SidebarProvider>
@@ -33,9 +40,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <Breadcrumb>
                         <BreadcrumbList>
                             {pages?.map((page, i) => (
-                                <div key={page.title} className='w-fit flex items-center gap-2'>
+                                <div key={page.title} className="w-fit flex items-center gap-2">
                                     <BreadcrumbItem key={page.title}>
-                                        <BreadcrumbLink href={!page.children ? page.url : undefined}>{page.title}</BreadcrumbLink>
+                                        <BreadcrumbLink href={!page.children ? page.url : undefined}>
+                                            {page.title}
+                                        </BreadcrumbLink>
                                     </BreadcrumbItem>
                                     {i < pages.length - 1 && <BreadcrumbSeparator />}
                                 </div>
