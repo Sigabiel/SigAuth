@@ -27,8 +27,6 @@ vite.config.ts.timestamp*
 *.env.production.local
 
 # NestJS
-*.js
-*.d.ts
 *.js.map
 
 # TypeScript
