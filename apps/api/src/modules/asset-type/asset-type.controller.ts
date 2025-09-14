@@ -13,7 +13,7 @@ import {
     ApiOkResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AssetType } from '@prisma/client';
+import { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('asset-type')
 @UseGuards(AuthGuard)
@@ -39,7 +39,7 @@ export class AssetTypesController {
             },
         },
     })
-    async createAssetType(@Body() createAssetTypeDto: CreateAssetTypeDto) {
+    async createAssetType(@Body() createAssetTypeDto: CreateAssetTypeDto): Promise<{ assetType: AssetType }> {
         const assetType: AssetType = await this.assetTypesService.createAssetType(createAssetTypeDto);
         return { assetType };
     }

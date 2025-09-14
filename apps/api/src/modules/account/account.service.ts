@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { CreateAccountDto } from '@/modules/account/dto/create-account.dto';
-import { Account } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { Account } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Injectable()
 export class AccountService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async createAccount(createAccountDto: CreateAccountDto) {
+    async createAccount(createAccountDto: CreateAccountDto): Promise<Account> {
         // TODO Hash password
 
         const account: Account = await this.prisma.account.create({ data: createAccountDto });
