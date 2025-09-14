@@ -46,3 +46,4 @@ pnpm-debug.log*
 # Misc
 coverage/
 .tmp/
+**/generated/
