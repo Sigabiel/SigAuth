@@ -7,6 +7,7 @@ import { DeleteAssetTypeDialog } from '@/routes/asset-types/DeleteAssetTypeDialo
 import { EditAssetTypeDialog } from '@/routes/asset-types/EditAssetTypeDialog';
 import type { AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import type { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { Edit, Trash } from 'lucide-react';
 import { useState } from 'react';
 
@@ -46,11 +47,21 @@ export const AssetTypePage: React.FC = () => {
                                 <TableCell>{(assetType.fields as AssetTypeField[]).length}</TableCell>
                                 <TableCell>{session.assets.filter(a => a.typeId === assetType.id).length}</TableCell>
                                 <TableCell className="justify-end flex gap-2 items-center">
-                                    <Button variant="outline" size="icon" onClick={() => setEditAssetType(assetType)}>
+                                    <Button
+                                        disabled={assetType.id === PROTECTED.AssetType.id}
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setEditAssetType(assetType)}
+                                    >
                                         <Edit className="h-4 w-4" />
                                         <span className="sr-only">Edit</span>
                                     </Button>
-                                    <Button variant="outline" size="icon" onClick={() => setDeleteAssetType(assetType)}>
+                                    <Button
+                                        disabled={assetType.id === PROTECTED.AssetType.id}
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setDeleteAssetType(assetType)}
+                                    >
                                         <Trash className="h-4 w-4" />
                                         <span className="sr-only">Delete</span>
                                     </Button>

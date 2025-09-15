@@ -20,6 +20,7 @@ import { cn, request } from '@/lib/utils';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { AssetFieldType, type AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import { type AssetType } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { CommandEmpty } from 'cmdk';
 import { BadgePlus, Check, ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
@@ -107,21 +108,23 @@ export const CreateAssetDialog = () => {
                                         <CommandList>
                                             <CommandEmpty>No asset types found.</CommandEmpty>
                                             <CommandGroup>
-                                                {session.assetTypes.map(type => (
-                                                    <CommandItem
-                                                        key={type.id}
-                                                        onSelect={() => {
-                                                            setAssetType(type);
-                                                            setAssetTypeSelectionOpen(false);
-                                                            setAssetFields({});
-                                                        }}
-                                                    >
-                                                        {type.name}
-                                                        <Check
-                                                            className={cn('ml-auto', assetType === type ? 'opacity-100' : 'opacity-0')}
-                                                        />
-                                                    </CommandItem>
-                                                ))}
+                                                {session.assetTypes
+                                                    .filter(type => type.id != PROTECTED.AssetType.id)
+                                                    .map(type => (
+                                                        <CommandItem
+                                                            key={type.id}
+                                                            onSelect={() => {
+                                                                setAssetType(type);
+                                                                setAssetTypeSelectionOpen(false);
+                                                                setAssetFields({});
+                                                            }}
+                                                        >
+                                                            {type.name}
+                                                            <Check
+                                                                className={cn('ml-auto', assetType === type ? 'opacity-100' : 'opacity-0')}
+                                                            />
+                                                        </CommandItem>
+                                                    ))}
                                             </CommandGroup>
                                         </CommandList>
                                     </Command>
