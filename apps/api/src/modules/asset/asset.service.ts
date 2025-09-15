@@ -1,8 +1,8 @@
-import { PROTECTED } from '@/common/constants';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AssetFieldType, AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import { Asset } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 
 @Injectable()
 export class AssetService {
@@ -46,7 +46,12 @@ export class AssetService {
         // check if every variable is of the right type
         for (const field of Object.entries(fields)) {
             const correspondingField = assetTypeFields.find(f => f.id == +field[0]);
-            const targetType = correspondingField?.type === AssetFieldType.TEXT ? 'string' : 'number';
+            const targetType =
+                correspondingField?.type === AssetFieldType.TEXT
+                    ? 'string'
+                    : correspondingField?.type === AssetFieldType.CHECKFIELD
+                      ? 'boolean'
+                      : 'number';
             if (typeof field[1] != targetType)
                 throw new BadRequestException(
                     'Invalid field type ( field: ' + field[0].toString() + ' must be of type ' + targetType + ')',

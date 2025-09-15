@@ -38,7 +38,6 @@ const RootComponent: React.FC = () => {
         }
     }, []);
 
-    console.log(session);
     return (
         <BrowserRouter>
             <StrictMode>

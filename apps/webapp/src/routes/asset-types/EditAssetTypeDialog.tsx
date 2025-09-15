@@ -1,14 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,14 +9,23 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { useSession } from '@/context/SessionContext';
 import { request } from '@/lib/utils';
 import { AssetFieldType, type AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
+import type { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 import { BadgePlus, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export const CreateAssetType = () => {
+export const EditAssetTypeDialog = ({ assetType, close }: { assetType?: AssetType; close: () => void }) => {
     const { session, setSession } = useSession();
 
     const [fields, setFields] = useState<AssetTypeField[]>([]);
+    const [fieldCache, setFieldCache] = useState<AssetTypeField[]>([]);
+
+    useEffect(() => {
+        if (assetType) {
+            setFields(assetType.fields as AssetTypeField[]);
+            setFieldCache(assetType.fields as AssetTypeField[]);
+        }
+    }, [assetType]);
 
     const addField = () => {
         const newField: AssetTypeField = {
@@ -39,44 +39,49 @@ export const CreateAssetType = () => {
     };
 
     const handleSubmit = async () => {
-        const name = (document.getElementById('name') as HTMLInputElement).value;
+        const name = (document.getElementById('edit-name') as HTMLInputElement).value.trim();
+        console.log('RUN NAME', name);
+        if (!assetType) return;
         if (name.length < 4) {
             toast.error('Name must be at least 4 characters long');
             return;
         }
 
-        const res = await request('POST', '/api/asset-type/create', {
-            name: (document.getElementById('name') as HTMLInputElement).value,
-            fields,
+        const res = await request('POST', '/api/asset-type/edit', {
+            assetTypeId: assetType.id,
+            updatedName: name,
+            updatedFields: fields.map(f => {
+                // eslint-disable-next-line
+                if (!fieldCache.find(fc => fc.id === f.id)) return { ...f, id: undefined } as any; // new fields get a id from the backend
+                return f;
+            }),
         });
 
         if (res.ok) {
-            setSession({ assetTypes: [...session.assetTypes, (await res.json()).assetType] });
+            const data = await res.json();
+            setSession({ assetTypes: session.assetTypes.map(at => (at.id === assetType.id ? data.updatedAssetType : at)) });
             setFields([]);
-            return;
+        } else {
+            console.error(await res.text());
+            throw new Error();
         }
-        throw new Error('Failed to create asset type');
     };
 
+    if (!assetType) return null;
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="ghost" className="w-fit">
-                    <BadgePlus />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={true} onOpenChange={() => close()}>
             <DialogContent className="!max-w-fit">
                 <DialogHeader>
-                    <DialogTitle>Create a new asset type</DialogTitle>
+                    <DialogTitle>Edit {assetType.name}</DialogTitle>
                     <DialogDescription>
-                        Define a new asset type (a blueprint for your assets) by specifying its name, and variables that assets can have.
+                        Edit asset type (a blueprint for your assets) by specifying its name, and variables that assets can have.
                     </DialogDescription>
                 </DialogHeader>
                 <div>
                     <div className="grid gap-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" placeholder="e.G Blog Post" />
+                            <Label htmlFor="edit-name">Name</Label>
+                            <Input id="edit-name" name="edit-name" placeholder="e.G Blog Post" defaultValue={assetType.name} />
                         </div>
                     </div>
 
@@ -97,7 +102,10 @@ export const CreateAssetType = () => {
                                     <TableRow key={field.id}>
                                         <TableCell
                                             className="w-[10px] cursor-pointer"
-                                            onClick={() => setFields(fields.filter(f => f.id !== field.id))}
+                                            onClick={() => {
+                                                setFields(fields.filter(f => f.id !== field.id));
+                                                setFieldCache(fieldCache.filter(f => f.id !== field.id));
+                                            }}
                                         >
                                             <Trash size={12} />
                                         </TableCell>
@@ -118,13 +126,14 @@ export const CreateAssetType = () => {
                                                         )
                                                     }
                                                 >
-                                                    New Field
+                                                    {fieldCache.find(f => f.id === field.id)?.name || 'New Field'}
                                                 </div>
                                             </ScrollArea>
                                         </TableCell>
 
                                         <TableCell>
                                             <Select
+                                                value={field.type + ''}
                                                 onValueChange={value => {
                                                     const type = parseInt(value) as AssetFieldType;
                                                     setFields(fields.map(f => (f.id === field.id ? { ...f, type } : f)));
@@ -177,13 +186,13 @@ export const CreateAssetType = () => {
                             className="w-full"
                             onClick={() =>
                                 toast.promise(handleSubmit, {
-                                    loading: 'Creating asset type...',
-                                    success: 'Asset type created successfully',
-                                    error: 'Failed to create asset type',
+                                    loading: 'Updating asset type...',
+                                    success: 'Asset type updated successfully',
+                                    error: 'Failed to update asset type',
                                 })
                             }
                         >
-                            Create
+                            Submit
                         </Button>
                     </DialogClose>
                 </DialogFooter>

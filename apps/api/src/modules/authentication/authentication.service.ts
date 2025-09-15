@@ -1,10 +1,10 @@
-import { SigAuthRootPermissions } from '@/common/constants';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Utils } from '@/common/utils';
 import { LoginRequestDto } from '@/modules/authentication/dto/login-request.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Account, App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client';
+import { SigAuthRootPermissions } from '@sigauth/prisma-wrapper/protected';
 import * as bycrypt from 'bcryptjs';
 import dayjs from 'dayjs';
 import * as process from 'node:process';

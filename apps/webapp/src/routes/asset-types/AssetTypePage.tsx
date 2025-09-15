@@ -2,9 +2,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSession } from '@/context/SessionContext';
-import { CreateAssetType } from '@/routes/asset-types/CreateAssetType';
-import { DeleteAssetType } from '@/routes/asset-types/DeleteAssetType';
-import { EditAssetType } from '@/routes/asset-types/EditAssetType';
+import { CreateAssetTypeDialog } from '@/routes/asset-types/CreateAssetTypeDialog';
+import { DeleteAssetTypeDialog } from '@/routes/asset-types/DeleteAssetTypeDialog';
+import { EditAssetTypeDialog } from '@/routes/asset-types/EditAssetTypeDialog';
 import type { AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import type { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 import { Edit, Trash } from 'lucide-react';
@@ -24,9 +24,9 @@ export const AssetTypePage: React.FC = () => {
             </p>
 
             <Card className="w-full py-2! p-2">
-                <CreateAssetType />
-                <EditAssetType assetType={editAssetType} close={() => setEditAssetType(undefined)} />
-                <DeleteAssetType assetType={deleteAssetType} close={() => setDeleteAssetType(undefined)} />
+                <CreateAssetTypeDialog />
+                <EditAssetTypeDialog assetType={editAssetType} close={() => setEditAssetType(undefined)} />
+                <DeleteAssetTypeDialog assetType={deleteAssetType} close={() => setDeleteAssetType(undefined)} />
 
                 <Table>
                     <TableHeader>

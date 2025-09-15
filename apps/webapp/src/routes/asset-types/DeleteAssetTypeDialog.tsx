@@ -15,7 +15,7 @@ import type { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 import { TriangleAlertIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-export const DeleteAssetType = ({ assetType, close }: { assetType?: AssetType; close: () => void }) => {
+export const DeleteAssetTypeDialog = ({ assetType, close }: { assetType?: AssetType; close: () => void }) => {
     const { session, setSession } = useSession();
 
     const handleSubmit = async () => {

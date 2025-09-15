@@ -1,8 +1,8 @@
-import { PROTECTED, SigAuthORPermissions, SigAuthRootPermissions } from '@/common/constants';
 import { Utils } from '@/common/utils';
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { AppPermission, AppWebFetch, AssetFieldType, AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import { PrismaClient } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED, SigAuthORPermissions, SigAuthRootPermissions } from '@sigauth/prisma-wrapper/protected';
 import * as bcrypt from 'bcryptjs';
 import * as process from 'node:process';
 

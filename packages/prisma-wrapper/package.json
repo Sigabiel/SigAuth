@@ -24,6 +24,11 @@
             "import": "./dist/json-types.js",
             "types": "./dist/json-types.d.ts",
             "default": "./dist/json-types.js"
+        },
+        "./protected": {
+            "import": "./dist/protected.js",
+            "types": "./dist/protected.d.ts",
+            "default": "./dist/protected.js"
         }
     },
     "dependencies": {

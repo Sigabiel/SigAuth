@@ -1,4 +1,3 @@
-import { PROTECTED } from '@/common/constants';
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Utils } from '@/common/utils';
 import { CreateAppDto } from '@/modules/app/dto/create-app.dto';
@@ -14,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { AppPermission, AppWebFetch } from '@sigauth/prisma-wrapper/json-types';
 import { App } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import dayjs from 'dayjs';
 import { firstValueFrom, retry, timeout } from 'rxjs';
 
