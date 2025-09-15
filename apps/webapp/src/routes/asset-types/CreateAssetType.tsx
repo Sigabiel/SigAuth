@@ -53,7 +53,9 @@ export const CreateAssetType = () => {
         if (res.ok) {
             setSession({ assetTypes: [...session.assetTypes, (await res.json()).assetType] });
             setFields([]);
+            return;
         }
+        throw new Error('Failed to create asset type');
     };
 
     return (
@@ -171,7 +173,16 @@ export const CreateAssetType = () => {
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button className="w-full" onClick={handleSubmit}>
+                        <Button
+                            className="w-full"
+                            onClick={() =>
+                                toast.promise(handleSubmit, {
+                                    loading: 'Creating asset type...',
+                                    success: 'Asset type created successfully',
+                                    error: 'Failed to create asset type',
+                                })
+                            }
+                        >
                             Create
                         </Button>
                     </DialogClose>

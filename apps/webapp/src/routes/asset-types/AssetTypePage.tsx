@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSession } from '@/context/SessionContext';
 import { CreateAssetType } from '@/routes/asset-types/CreateAssetType';
+import { DeleteAssetType } from '@/routes/asset-types/DeleteAssetType';
 import { EditAssetType } from '@/routes/asset-types/EditAssetType';
 import type { AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import type { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
@@ -13,6 +14,7 @@ export const AssetTypePage: React.FC = () => {
     const { session } = useSession();
 
     const [editAssetType, setEditAssetType] = useState<AssetType | undefined>(undefined);
+    const [deleteAssetType, setDeleteAssetType] = useState<AssetType | undefined>(undefined); // support bulk delete later on
 
     return (
         <>
@@ -24,6 +26,7 @@ export const AssetTypePage: React.FC = () => {
             <Card className="w-full py-2! p-2">
                 <CreateAssetType />
                 <EditAssetType assetType={editAssetType} close={() => setEditAssetType(undefined)} />
+                <DeleteAssetType assetType={deleteAssetType} close={() => setDeleteAssetType(undefined)} />
 
                 <Table>
                     <TableHeader>
@@ -47,7 +50,7 @@ export const AssetTypePage: React.FC = () => {
                                         <Edit className="h-4 w-4" />
                                         <span className="sr-only">Edit</span>
                                     </Button>
-                                    <Button variant="outline" size="icon">
+                                    <Button variant="outline" size="icon" onClick={() => setDeleteAssetType(assetType)}>
                                         <Trash className="h-4 w-4" />
                                         <span className="sr-only">Delete</span>
                                     </Button>
