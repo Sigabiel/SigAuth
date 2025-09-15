@@ -30,7 +30,7 @@ export enum AssetFieldType {
     TEXT = 1,
     NUMBER = 2,
     CHECKFIELD = 3,
-    SELECTION = 4,
-    ASSET = 5,
+    // SELECTION = 4,
+    // ASSET = 5,
     // ACCOUNT = 6,
 }
