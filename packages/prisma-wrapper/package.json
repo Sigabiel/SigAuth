@@ -9,11 +9,6 @@
         "lint": "echo SKIPPING LINT ON PRISMA-WRAPPER"
     },
     "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        },
         "./prisma": {
             "import": "./dist/extended-prisma.js",
             "types": "./dist/extended-prisma.d.ts",
