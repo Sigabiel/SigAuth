@@ -57,13 +57,12 @@ export const EditAssetType = ({ assetType, close }: { assetType?: AssetType; clo
         });
 
         if (res.ok) {
-            toast.success('Asset type edited successfully');
             const data = await res.json();
             setSession({ assetTypes: session.assetTypes.map(at => (at.id === assetType.id ? data.updatedAssetType : at)) });
             setFields([]);
         } else {
-            toast.error('Failed to edit asset type');
             console.error(await res.text());
+            throw new Error();
         }
     };
 
@@ -182,7 +181,16 @@ export const EditAssetType = ({ assetType, close }: { assetType?: AssetType; clo
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button className="w-full" onClick={handleSubmit}>
+                        <Button
+                            className="w-full"
+                            onClick={() =>
+                                toast.promise(handleSubmit, {
+                                    loading: 'Updating asset type...',
+                                    success: 'Asset type updated successfully',
+                                    error: 'Failed to update asset type',
+                                })
+                            }
+                        >
                             Submit
                         </Button>
                     </DialogClose>
