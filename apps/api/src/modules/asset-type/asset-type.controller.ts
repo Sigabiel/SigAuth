@@ -16,14 +16,13 @@ import {
 import { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('asset-type')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, IsRoot)
 @ApiUnauthorizedResponse({ description: "Thrown when the user isn't authenticated" })
 @ApiForbiddenResponse({ description: 'This route can only be called from accounts with root access' })
 export class AssetTypesController {
     constructor(private readonly assetTypesService: AssetTypesService) {}
 
     @Post('create')
-    @UseGuards(IsRoot)
     @ApiCreatedResponse({
         description: 'Asset type created successfully',
         example: {
@@ -45,7 +44,6 @@ export class AssetTypesController {
     }
 
     @Post('edit')
-    @UseGuards(IsRoot)
     @ApiOkResponse({
         description: 'Asset type updated successfully',
         example: {
@@ -74,7 +72,6 @@ export class AssetTypesController {
     }
 
     @Post('delete')
-    @UseGuards(IsRoot)
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiNotFoundResponse({ description: 'Not all asset types found or invalid ids provided' })
     async deleteAssetType(@Body() deleteAssetTypeDto: DeleteAssetTypeDto) {

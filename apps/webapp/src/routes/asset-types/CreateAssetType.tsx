@@ -100,20 +100,25 @@ export const CreateAssetType = () => {
                                             <Trash size={12} />
                                         </TableCell>
 
-                                        <TableCell className="w-fit">
-                                            <div
-                                                contentEditable={true}
-                                                suppressContentEditableWarning={true}
-                                                onInput={e =>
-                                                    setFields(
-                                                        fields.map(f =>
-                                                            f.id === field.id ? { ...f, name: (e.target as HTMLDivElement).innerText } : f,
-                                                        ),
-                                                    )
-                                                }
-                                            >
-                                                New Field
-                                            </div>
+                                        <TableCell>
+                                            <ScrollArea className="max-w-[200px] overflow-auto">
+                                                <div
+                                                    className="p-1 focus:outline-none focus:ring-2 focus:ring-ring "
+                                                    contentEditable={true}
+                                                    suppressContentEditableWarning={true}
+                                                    onInput={e =>
+                                                        setFields(
+                                                            fields.map(f =>
+                                                                f.id === field.id
+                                                                    ? { ...f, name: (e.target as HTMLDivElement).innerText }
+                                                                    : f,
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    New Field
+                                                </div>
+                                            </ScrollArea>
                                         </TableCell>
 
                                         <TableCell>

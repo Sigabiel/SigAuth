@@ -14,6 +14,7 @@ export class IsRoot implements CanActivate {
         if (!request.account) throw new UnauthorizedException('No account found');
 
         const account: AccountWithPermissions = request.account as AccountWithPermissions;
+        console.log(account);
         return !!account.permissions.find(
             p =>
                 p.appId == PROTECTED.App.id &&
