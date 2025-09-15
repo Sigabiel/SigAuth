@@ -1,14 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,14 +9,22 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { useSession } from '@/context/SessionContext';
 import { request } from '@/lib/utils';
 import { AssetFieldType, type AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
+import type { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 import { BadgePlus, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-export const CreateAssetType = () => {
+export const EditAssetType = ({ assetType, close }: { assetType?: AssetType; close: () => void }) => {
     const { session, setSession } = useSession();
 
     const [fields, setFields] = useState<AssetTypeField[]>([]);
+    const fieldCache = useMemo(() => assetType?.fields as AssetTypeField[], [assetType]);
+
+    useEffect(() => {
+        if (assetType) {
+            setFields(assetType.fields as AssetTypeField[]);
+        }
+    }, [assetType]);
 
     const addField = () => {
         const newField: AssetTypeField = {
@@ -56,18 +55,14 @@ export const CreateAssetType = () => {
         }
     };
 
+    if (!assetType) return null;
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="ghost" className="w-fit">
-                    <BadgePlus />
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="!max-w-fit">
+        <Dialog open={true} onOpenChange={() => close()}>
+            <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create a new asset type</DialogTitle>
+                    <DialogTitle>Edit {assetType.name}</DialogTitle>
                     <DialogDescription>
-                        Define a new asset type (a blueprint for your assets) by specifying its name, and variables that assets can have.
+                        Edit asset type (a blueprint for your assets) by specifying its name, and variables that assets can have.
                     </DialogDescription>
                 </DialogHeader>
                 <div>
@@ -112,7 +107,7 @@ export const CreateAssetType = () => {
                                                     )
                                                 }
                                             >
-                                                New Field
+                                                {fieldCache.find(f => f.id === field.id)?.name || 'New Field'}
                                             </div>
                                         </TableCell>
 

@@ -1,7 +1,7 @@
-import { ChevronDown, Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from 'lucide-react'
+import { ChevronDown, Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from 'lucide-react';
 
-import { Button } from '@/components/ui/button'
-import { CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Button } from '@/components/ui/button';
+import { CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
     Sidebar,
     SidebarContent,
@@ -15,19 +15,19 @@ import {
     SidebarMenuSub,
     SidebarMenuSubButton,
     SidebarMenuSubItem,
-} from '@/components/ui/sidebar'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { logout } from '@/lib/utils'
-import { Collapsible } from '@radix-ui/react-collapsible'
-import { useNavigate } from 'react-router'
+} from '@/components/ui/sidebar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { logout } from '@/lib/utils';
+import { Collapsible } from '@radix-ui/react-collapsible';
+import { useNavigate } from 'react-router';
 
 export type SidebarItem = {
-    title: string
-    url: string
-    icon: React.ElementType
-    disabled?: boolean
-    children?: SidebarItem[]
-}
+    title: string;
+    url: string;
+    icon: React.ElementType;
+    disabled?: boolean;
+    children?: SidebarItem[];
+};
 
 // Menu items.
 export const sidebarItems: SidebarItem[] = [
@@ -66,10 +66,10 @@ export const sidebarItems: SidebarItem[] = [
         url: '/settings',
         icon: Settings,
     },
-]
+];
 
 export function AppSidebar() {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     // TODO this is shoud create children recursively currently it can only handle one level of children
     return (
@@ -101,11 +101,7 @@ export function AppSidebar() {
                                                             className={`${subItem.disabled ? 'cursor-not-allowed' : 'cursor-default'} ${window.location.pathname === subItem.url ? 'bg-accent' : ''}`}
                                                         >
                                                             <SidebarMenuSubButton asChild>
-                                                                <div
-                                                                    onClick={() =>
-                                                                        !subItem.disabled && navigate(subItem.url)
-                                                                    }
-                                                                >
+                                                                <div onClick={() => !subItem.disabled && navigate(subItem.url)}>
                                                                     <subItem.icon />
                                                                     <span>{subItem.title}</span>
                                                                 </div>
@@ -115,7 +111,7 @@ export function AppSidebar() {
                                                 </SidebarMenuSub>
                                             </CollapsibleContent>
                                         </Collapsible>
-                                    )
+                                    );
                                 } else {
                                     return (
                                         <SidebarMenuItem
@@ -129,7 +125,7 @@ export function AppSidebar() {
                                                 </div>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
-                                    )
+                                    );
                                 }
                             })}
                         </SidebarMenu>
@@ -146,5 +142,5 @@ export function AppSidebar() {
                 </div>
             </SidebarFooter>
         </Sidebar>
-    )
+    );
 }

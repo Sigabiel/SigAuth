@@ -3,13 +3,17 @@ import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSession } from '@/context/SessionContext';
 import { CreateAssetType } from '@/routes/asset-types/CreateAssetType';
+import { EditAssetType } from '@/routes/asset-types/EditAssetType';
 import type { AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
+import type { AssetType } from '@sigauth/prisma-wrapper/prisma-client';
 import { Edit, Trash } from 'lucide-react';
+import { useState } from 'react';
 
 export const AssetTypePage: React.FC = () => {
     const { session } = useSession();
 
-    console.log(session);
+    const [editAssetType, setEditAssetType] = useState<AssetType | undefined>(undefined);
+
     return (
         <>
             <h2 className="scroll-m-20 text-3xl font-semibold">Manage Asset Types</h2>
@@ -19,11 +23,11 @@ export const AssetTypePage: React.FC = () => {
 
             <Card className="w-full py-2! p-2">
                 <CreateAssetType />
+                <EditAssetType assetType={editAssetType} close={() => setEditAssetType(undefined)} />
 
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead></TableHead>
                             <TableHead className="w-[100px]">ID</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Fields</TableHead>
@@ -34,12 +38,12 @@ export const AssetTypePage: React.FC = () => {
                     <TableBody>
                         {session.assetTypes.map(assetType => (
                             <TableRow key={assetType.id}>
-                                <TableCell className="w-[100px]">{assetType.id}</TableCell>
+                                <TableCell className="w-[45px]">{assetType.id}</TableCell>
                                 <TableCell>{assetType.name}</TableCell>
                                 <TableCell>{(assetType.fields as AssetTypeField[]).length}</TableCell>
                                 <TableCell>{session.assets.filter(a => a.typeId === assetType.id).length}</TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="outline" size="icon">
+                                <TableCell className="justify-end flex gap-2 items-center">
+                                    <Button variant="outline" size="icon" onClick={() => setEditAssetType(assetType)}>
                                         <Edit className="h-4 w-4" />
                                         <span className="sr-only">Edit</span>
                                     </Button>
