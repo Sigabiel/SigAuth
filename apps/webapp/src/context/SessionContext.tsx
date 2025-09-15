@@ -1,24 +1,22 @@
-import type { Account, App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client'
-import { createContext, useMemo, useState } from 'react'
+import type { Account, App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client';
+import { createContext, use, useState, type ReactNode } from 'react';
+
+export type SessionStorage = {
+    account?: Account;
+    session?: Session;
+    accounts: Account[];
+    assetTypes: AssetType[];
+    assets: Asset[];
+    apps: App[];
+    containers: Container[];
+};
 
 export type SessionContext = {
-    account?: Account
-    session?: Session
-    accounts: Account[]
-    assetTypes: AssetType[]
-    assets: Asset[]
-    apps: App[]
-    containers: Container[]
+    session: SessionStorage;
+    setSession: (update: Partial<SessionStorage>) => void;
+};
 
-    setAccount: (account: Account, session: Session) => void
-    setAccounts: (accounts: Account[]) => void
-    setAssetTypes: (assetTypes: AssetType[]) => void
-    setAssets: (assets: Asset[]) => void
-    setApps: (apps: App[]) => void
-    setContainers: (containers: Container[]) => void
-}
-
-export const DefaultSessionContext = createContext<SessionContext>({
+const defaultSessionContext: SessionStorage = {
     account: undefined,
     session: undefined,
     accounts: [],
@@ -26,38 +24,23 @@ export const DefaultSessionContext = createContext<SessionContext>({
     assets: [],
     apps: [],
     containers: [],
+};
 
-    setAccount: () => {},
-    setAccounts: () => {},
-    setAssetTypes: () => {},
-    setAssets: () => {},
-    setApps: () => {},
-    setContainers: () => {},
-})
+export const SessionStorageContext = createContext<SessionContext | null>(null);
 
-export const useSession = () => {
-    const [account, setAccount] = useState<Account>()
-    const [session, setSession] = useState<Session>()
-    const [accounts, setAccounts] = useState<Account[]>([])
-    const [assetTypes, setAssetTypes] = useState<AssetType[]>([])
-    const [assets, setAssets] = useState<Asset[]>([])
-    const [apps, setApps] = useState<App[]>([])
-    const [containers, setContainers] = useState<Container[]>([])
+// Context Provider
+export default function SessionContextProvider({ children, init }: { init: SessionStorage | null; children: ReactNode }) {
+    const [sessionStorage, setSessionState] = useState<SessionStorage>(init || defaultSessionContext);
 
-    const contextFunctions = useMemo(
-        () => ({
-            setAccount: (account: Account, session: Session) => {
-                setAccount(account)
-                setSession(session)
-            },
-            setAccounts: (accounts: Account[]) => setAccounts(accounts),
-            setAssetTypes: (assetTypes: AssetType[]) => setAssetTypes(assetTypes),
-            setAssets: (assets: Asset[]) => setAssets(assets),
-            setApps: (apps: App[]) => setApps(apps),
-            setContainers: (containers: Container[]) => setContainers(containers),
-        }),
-        [],
-    )
+    const setSession = (update: Partial<SessionStorage>) => {
+        setSessionState(prev => ({ ...prev, ...update }));
+    };
 
-    return { account, session, accounts, assetTypes, assets, apps, containers, ...contextFunctions } as SessionContext
+    return <SessionStorageContext.Provider value={{ session: sessionStorage, setSession }}>{children}</SessionStorageContext.Provider>;
+}
+
+export function useSession() {
+    const ctx = use(SessionStorageContext);
+    if (!ctx) throw new Error('useSession must be used within a SessionContextProvider');
+    return ctx;
 }

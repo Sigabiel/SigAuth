@@ -1,14 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DefaultSessionContext } from '@/context/SessionContext';
+import { useSession } from '@/context/SessionContext';
 import { CreateAssetType } from '@/routes/asset-types/CreateAssetType';
 import type { AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import { Edit, Trash } from 'lucide-react';
-import { useContext } from 'react';
 
 export const AssetTypePage: React.FC = () => {
-    const session = useContext(DefaultSessionContext);
+    const { session } = useSession();
 
     console.log(session);
     return (

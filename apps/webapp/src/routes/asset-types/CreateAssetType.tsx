@@ -23,7 +23,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export const CreateAssetType = () => {
-    const session = useSession();
+    const { session, setSession } = useSession();
 
     const [fields, setFields] = useState<AssetTypeField[]>([]);
 
@@ -51,7 +51,7 @@ export const CreateAssetType = () => {
         });
 
         if (res.ok) {
-            session.setAssetTypes([...session.assetTypes, (await res.json()).assetType]);
+            setSession({ assetTypes: [...session.assetTypes, (await res.json()).assetType] });
             setFields([]);
         }
     };

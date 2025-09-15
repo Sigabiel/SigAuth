@@ -77,7 +77,6 @@ export class AuthenticationService {
         const session = await this.prisma.session.findUnique({ where: { sessionId } });
         if (!account || !session) throw new UnauthorizedException('Not authenticated');
 
-        console.log(account.permissions);
         if (account.permissions.some(p => p.identifier == SigAuthRootPermissions.ROOT)) {
             const [accounts, assets, assetTypes, apps, containers] = await Promise.all([
                 this.prisma.account.findMany(),
