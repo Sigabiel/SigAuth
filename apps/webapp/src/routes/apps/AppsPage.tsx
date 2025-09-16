@@ -1,6 +1,10 @@
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSession } from '@/context/SessionContext';
 import { CreateAppDialog } from '@/routes/apps/CreateAppDialog';
+import type { AppPermission } from '@sigauth/prisma-wrapper/json-types';
+import { Copy, Edit, Trash } from 'lucide-react';
 
 export const AppsPage = () => {
     const { session } = useSession();
@@ -14,6 +18,56 @@ export const AppsPage = () => {
 
             <Card className="w-full py-2! p-2">
                 <CreateAppDialog />
+
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[100px]">ID</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>URL</TableHead>
+                            <TableHead>API Token</TableHead>
+                            <TableHead>Web Fetch</TableHead>
+                            <TableHead>Containers</TableHead>
+                            <TableHead>Permissions</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {session.apps.map(app => (
+                            <TableRow key={app.id}>
+                                <TableCell className="w-[100px]">{app.id}</TableCell>
+                                <TableCell>{app.name}</TableCell>
+                                <TableCell>{app.url}</TableCell>
+                                <TableCell>
+                                    {app.token.slice(0, 6)}...{app.token.slice(-4)}
+                                    <Button
+                                        onClick={() => navigator.clipboard.writeText(app.token)}
+                                        className="ring-offset-background hover:ring-primary/90 transition-all duration-300 hover:ring-2 ml-3 hover:ring-offset-2"
+                                        size={'sm'}
+                                    >
+                                        <Copy />
+                                    </Button>
+                                </TableCell>
+                                <TableCell>{app.webFetch ? 'Enabled' : 'Disabled'}</TableCell>
+                                <TableCell>
+                                    {session.containers.filter(c => (c.apps as number[]).includes(app.id)).map(c => c.name).length}
+                                </TableCell>
+                                <TableCell>
+                                    {(app.permissions as AppPermission).asset.length} /{' '}
+                                    {(app.permissions as AppPermission).container.length} / {(app.permissions as AppPermission).root.length}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="outline" size="icon">
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="outline" size="icon">
+                                        <Trash className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </Card>
         </>
     );
