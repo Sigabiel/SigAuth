@@ -37,17 +37,9 @@ export const CreateAssetDialog = () => {
         if (!assetType) return;
         const name = (document.getElementById('create-name') as HTMLInputElement).value;
         if (name.length < 4) {
-            toast.error('Name must be at least 4 characters long');
-            return;
+            throw new Error('Name must be at least 4 characters long');
         }
 
-        console.log(
-            JSON.stringify({
-                assetTypeId: assetType.id,
-                name: name,
-                fields: assetFields,
-            }),
-        );
         const res = await request('POST', '/api/asset/create', {
             assetTypeId: assetType.id,
             name: name,
@@ -56,15 +48,15 @@ export const CreateAssetDialog = () => {
 
         setAssetFields({});
         setAssetType(null);
-        (document.getElementById('create-name') as HTMLInputElement).value = '';
         if (res.ok) {
-            setSession({ assets: [...session.assets, (await res.json()).asset] });
+            const data = await res.json();
+            console.log(data);
+            setSession({ assets: [...session.assets, data.asset] });
             return;
         }
-        throw new Error('Failed to create asset type');
+        throw new Error('Failed to create asset');
     };
 
-    console.log(assetFields);
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -176,7 +168,7 @@ export const CreateAssetDialog = () => {
                                 toast.promise(handleSubmit, {
                                     loading: 'Creating asset...',
                                     success: 'Asset created successfully',
-                                    error: 'Failed to create asset',
+                                    error: (e: any) => e.message || 'Failed to create asset type',
                                 })
                             }
                         >

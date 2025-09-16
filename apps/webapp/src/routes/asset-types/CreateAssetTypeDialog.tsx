@@ -41,8 +41,11 @@ export const CreateAssetTypeDialog = () => {
     const handleSubmit = async () => {
         const name = (document.getElementById('name') as HTMLInputElement).value;
         if (name.length < 4) {
-            toast.error('Name must be at least 4 characters long');
-            return;
+            throw new Error('Name must be at least 4 characters long');
+        }
+
+        if (fields.some(f => f.name.length < 4)) {
+            throw new Error('All field names must be at least 4 characters long');
         }
 
         const res = await request('POST', '/api/asset-type/create', {
@@ -179,7 +182,7 @@ export const CreateAssetTypeDialog = () => {
                                 toast.promise(handleSubmit, {
                                     loading: 'Creating asset type...',
                                     success: 'Asset type created successfully',
-                                    error: 'Failed to create asset type',
+                                    error: (e: any) => e.message || 'Failed to create asset type',
                                 })
                             }
                         >

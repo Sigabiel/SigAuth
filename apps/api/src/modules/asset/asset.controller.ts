@@ -35,7 +35,7 @@ export class AssetController {
             statusCode: 400,
         },
     })
-    async createAsset(@Body() createAssetDto: CreateAssetDto): Promise<Asset> {
+    async createAsset(@Body() createAssetDto: CreateAssetDto): Promise<{ asset: Asset }> {
         const asset = await this.assetsService.createOrUpdateAsset(
             undefined,
             createAssetDto.name,
@@ -44,7 +44,7 @@ export class AssetController {
             false,
         );
 
-        return asset;
+        return { asset };
     }
 
     @Post('edit')
@@ -74,7 +74,7 @@ export class AssetController {
         },
     })
     @ApiNotFoundResponse({ description: 'Asset or asset type not found' })
-    async editAsset(@Body() editAssetDto: EditAssetDto): Promise<Asset> {
+    async editAsset(@Body() editAssetDto: EditAssetDto): Promise<{ asset: Asset }> {
         const asset = await this.assetsService.createOrUpdateAsset(
             editAssetDto.assetId,
             editAssetDto.name,
@@ -82,7 +82,7 @@ export class AssetController {
             editAssetDto.fields,
             false,
         );
-        return asset;
+        return { asset };
     }
 
     @Post('delete')
