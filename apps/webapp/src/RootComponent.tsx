@@ -4,6 +4,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import SessionContextProvider, { type SessionStorage } from '@/context/SessionContext';
 import { logout, request } from '@/lib/utils';
 import { AccountsPage } from '@/routes/accounts/AccountsPage';
+import { AppsPage } from '@/routes/apps/AppsPage';
 import { AssetTypePage } from '@/routes/asset-types/AssetTypePage';
 import { AssetPage } from '@/routes/assets/AssetPage';
 import { ContainerPage } from '@/routes/container/ContainerPage';
@@ -58,6 +59,8 @@ const RootComponent: React.FC = () => {
                                         <Route path="/asset/instances" element={<AssetPage />} />
                                         <Route path="/container" element={<ContainerPage />} />
                                         <Route path="/settings" element={<SettingsPage />} />
+                                        <Route path="/apps" element={<AppsPage />} />
+                                        <Route path="*" element={<h1>404 Not Found</h1>} />
                                     </Routes>
                                 </Layout>
                             ) : (

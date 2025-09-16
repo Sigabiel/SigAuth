@@ -68,8 +68,7 @@ export const CreateAssetDialog = () => {
                 <DialogHeader>
                     <DialogTitle>Create a new asset</DialogTitle>
                     <DialogDescription>
-                        Define a new asset depending on a asset type. You can create as many asset types as you want and fill them with
-                        data.
+                        Define a new asset depending on a asset type. You can create as many asset as you want and fill them with data.
                     </DialogDescription>
                 </DialogHeader>
                 <div>

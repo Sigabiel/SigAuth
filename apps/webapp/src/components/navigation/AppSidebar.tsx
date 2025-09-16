@@ -1,4 +1,4 @@
-import { ChevronDown, Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from 'lucide-react';
+import { AppWindow, ChevronDown, Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -49,6 +49,11 @@ export const sidebarItems: SidebarItem[] = [
             { title: 'Types', url: '/asset/types', icon: Stamp },
             { title: 'Instances', url: '/asset/instances', icon: Layers },
         ],
+    },
+    {
+        title: 'Apps',
+        url: '/apps',
+        icon: AppWindow,
     },
     {
         title: 'Container',
