@@ -1,13 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSession } from '@/context/SessionContext';
 import { CreateAppDialog } from '@/routes/apps/CreateAppDialog';
+import { EditAppDialog } from '@/routes/apps/EditAppDialog';
 import type { AppPermission } from '@sigauth/prisma-wrapper/json-types';
+import type { App } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { Copy, Edit, Trash } from 'lucide-react';
+import { useState } from 'react';
 
 export const AppsPage = () => {
     const { session } = useSession();
+
+    const [configureApp, setConfigureApp] = useState<App | undefined>(undefined);
 
     return (
         <>
@@ -18,6 +25,7 @@ export const AppsPage = () => {
 
             <Card className="w-full py-2! p-2">
                 <CreateAppDialog />
+                <EditAppDialog app={configureApp} close={() => setConfigureApp(undefined)} />
 
                 <Table>
                     <TableHeader>
@@ -53,14 +61,37 @@ export const AppsPage = () => {
                                     {session.containers.filter(c => (c.apps as number[]).includes(app.id)).map(c => c.name).length}
                                 </TableCell>
                                 <TableCell>
-                                    {(app.permissions as AppPermission).asset.length} /{' '}
-                                    {(app.permissions as AppPermission).container.length} / {(app.permissions as AppPermission).root.length}
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span>{(app.permissions as AppPermission).asset.length} </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Asset permissions</TooltipContent>
+                                    </Tooltip>
+                                    /
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span> {(app.permissions as AppPermission).container.length} </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Container permissions</TooltipContent>
+                                    </Tooltip>
+                                    /
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span> {(app.permissions as AppPermission).root.length} </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Root permissions</TooltipContent>
+                                    </Tooltip>
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="outline" size="icon">
+                                <TableCell className="text-right justify-end flex gap-2">
+                                    <Button
+                                        disabled={app.id == PROTECTED.App.id}
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setConfigureApp(app)}
+                                    >
                                         <Edit className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="outline" size="icon">
+                                    <Button disabled={app.id == PROTECTED.App.id} variant="outline" size="icon">
                                         <Trash className="h-4 w-4" />
                                     </Button>
                                 </TableCell>

@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -8,8 +8,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSession } from '@/context/SessionContext';
 import { request } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { AppPermission, AppWebFetch } from '@sigauth/prisma-wrapper/json-types';
+import type { App } from '@sigauth/prisma-wrapper/prisma-client';
 import { BadgePlus, XIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -22,45 +24,64 @@ const formSchema = z.object({
         container: z.array(z.string().min(3, 'Container permission must be at least 3 characters long')),
         root: z.array(z.string().min(3, 'Root permission must be at least 3 characters long')),
     }),
+    nudge: z.boolean(),
     webFetchEnabled: z.boolean().optional(),
 });
 
-export const CreateAppDialog = () => {
+export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) => {
     const { session, setSession } = useSession();
 
-    const [open, setOpen] = useState(false);
     const [tab, setTab] = useState<'asset' | 'container' | 'root'>('asset');
     const [permissionField, setPermissionField] = useState<string>('');
 
     const submitToApi = async (values: z.infer<typeof formSchema>) => {
-        const res = await request('POST', '/api/app/create', values);
+        if (!app) return;
+        const res = await request('POST', '/api/app/edit', { id: app.id, ...values });
 
         if (res.ok) {
             const data = await res.json();
-            setSession({ apps: [...session.apps, data] });
-            setOpen(false);
+            setSession({ apps: session.apps.map(a => (a.id === app.id ? data : a)) });
+            close();
             return;
         }
-        throw new Error((await res.json()).message || 'Failed to create app');
+        throw new Error((await res.json()).message || 'Failed to edit app');
     };
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: '',
-            url: '',
-            webFetchEnabled: false,
+            name: app?.name,
+            url: app?.url,
+            webFetchEnabled: app ? (app.webFetch as AppWebFetch).enabled : false,
+            nudge: false,
             permissions: {
-                asset: [] as string[],
-                container: [] as string[],
-                root: [] as string[],
+                asset: app ? (app.permissions as AppPermission).asset : [],
+                container: app ? (app.permissions as AppPermission).container : [],
+                root: app ? (app.permissions as AppPermission).root : [],
             },
         },
     });
 
+    // wenn sich app ändert → reset
+    useEffect(() => {
+        if (app) {
+            form.reset({
+                name: app.name,
+                url: app.url,
+                webFetchEnabled: (app.webFetch as AppWebFetch).enabled,
+                nudge: false,
+                permissions: {
+                    asset: (app.permissions as AppPermission).asset,
+                    container: (app.permissions as AppPermission).container,
+                    root: (app.permissions as AppPermission).root,
+                },
+            });
+        }
+    }, [app]);
+
+    if (!app) return null;
     const permissions = form.watch(`permissions.${tab}`);
     const webFetch = form.watch('webFetchEnabled');
-
     const addItem = () => {
         if (!permissionField || permissionField.length < 3 || !/^[A-Z0-9 _-]*$/i.test(permissionField)) {
             return;
@@ -75,18 +96,11 @@ export const CreateAppDialog = () => {
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" className="w-fit">
-                    <BadgePlus />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={true} onOpenChange={close}>
             <DialogContent className="!max-w-fit">
                 <DialogHeader>
-                    <DialogTitle>Create a new app</DialogTitle>
-                    <DialogDescription>
-                        Define a new app here. You can create as many app as you want and fill them with data.
-                    </DialogDescription>
+                    <DialogTitle>Edit {app.name}</DialogTitle>
+                    <DialogDescription>Reconfigure your application settings and permissions.</DialogDescription>
                 </DialogHeader>
                 <div>
                     <Form {...form}>
@@ -94,9 +108,9 @@ export const CreateAppDialog = () => {
                             onSubmit={(e: React.FormEvent) => {
                                 e.preventDefault();
                                 toast.promise(form.handleSubmit(submitToApi), {
-                                    loading: 'Creating app...',
-                                    success: 'App created successfully',
-                                    error: (err: any) => err?.message || 'Failed to create app',
+                                    loading: 'Editing app...',
+                                    success: 'App edited successfully',
+                                    error: (err: any) => err?.message || 'Failed to edit app',
                                 });
                             }}
                             className="space-y-8"
