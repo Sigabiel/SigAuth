@@ -99,56 +99,65 @@ export const CreateContainerDialog = () => {
                         <div className="space-y-4">
                             <div>
                                 <Label htmlFor="asset-id">Assets</Label>
-                                <div className="grid grid-cols-2 gap-3 mt-1.5">
-                                    <Input id="asset-id" placeholder="Enter asset ID" />
-                                    <Popover open={assetSelectorOpen} onOpenChange={setAssetSelectorOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant={'outline'}
-                                                role="combobox"
-                                                aria-expanded={assetSelectorOpen}
-                                                className="justify-between"
-                                            >
-                                                Select an asset
-                                                <ChevronsUpDown className="opacity-50" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-[90%] p-0 !z-300 pointer-events-auto">
-                                            <Command>
-                                                <CommandInput placeholder="Search asset types..." className="h-9" />
-                                                <CommandList>
-                                                    <CommandEmpty>No assets found.</CommandEmpty>
-                                                    <CommandGroup>
-                                                        {session.assets
-                                                            .filter(
-                                                                asset =>
-                                                                    asset.id != PROTECTED.AssetType.id &&
-                                                                    !form.watch('assets').includes(asset.id),
-                                                            )
-                                                            .map(asset => (
-                                                                <CommandItem
-                                                                    key={asset.id}
-                                                                    onSelect={() => {
-                                                                        setAssetSelectorOpen(false);
-                                                                        form.setValue('assets', [...form.getValues('assets'), asset.id]);
-                                                                    }}
-                                                                >
-                                                                    {asset.name}
-                                                                    <Check
-                                                                        className={cn(
-                                                                            'ml-auto',
-                                                                            asset.id === form.watch('assets')[0]
-                                                                                ? 'opacity-100'
-                                                                                : 'opacity-0',
-                                                                        )}
-                                                                    />
-                                                                </CommandItem>
-                                                            ))}
-                                                    </CommandGroup>
-                                                </CommandList>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
+                                <div className="grid grid-cols-3 gap-3 mt-1.5">
+                                    <Input id="asset-id" className="col-span-1" placeholder="Enter asset ID" />
+                                    <div className="col-span-2 [&>:first-child]:w-full [&>:last-child]:!min-w-[60%]">
+                                        <Popover open={assetSelectorOpen} onOpenChange={setAssetSelectorOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant={'outline'}
+                                                    role="combobox"
+                                                    aria-expanded={assetSelectorOpen}
+                                                    className="justify-between"
+                                                >
+                                                    Select an asset
+                                                    <ChevronsUpDown className="opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="p-0 !z-300 pointer-events-auto">
+                                                <Command>
+                                                    <CommandInput placeholder="Search asset types..." className="h-9" />
+                                                    <CommandList>
+                                                        <CommandEmpty>No assets found.</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {session.assets
+                                                                .filter(
+                                                                    asset =>
+                                                                        asset.id != PROTECTED.AssetType.id &&
+                                                                        !form.watch('assets').includes(asset.id),
+                                                                )
+                                                                .map(asset => (
+                                                                    <CommandItem
+                                                                        key={asset.id}
+                                                                        onSelect={() => {
+                                                                            setAssetSelectorOpen(false);
+                                                                            form.setValue('assets', [
+                                                                                ...form.getValues('assets'),
+                                                                                asset.id,
+                                                                            ]);
+                                                                        }}
+                                                                    >
+                                                                        {asset.name}{' '}
+                                                                        <span className="text-gray-500">
+                                                                            ({asset.id},{' '}
+                                                                            {session.assetTypes.find(a => a.id == asset.typeId)?.name})
+                                                                        </span>
+                                                                        <Check
+                                                                            className={cn(
+                                                                                'ml-auto',
+                                                                                asset.id === form.watch('assets')[0]
+                                                                                    ? 'opacity-100'
+                                                                                    : 'opacity-0',
+                                                                            )}
+                                                                        />
+                                                                    </CommandItem>
+                                                                ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {form.watch('assets').map(assetId => {
