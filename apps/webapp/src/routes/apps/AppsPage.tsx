@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSession } from '@/context/SessionContext';
 import { CreateAppDialog } from '@/routes/apps/CreateAppDialog';
+import { DeleteAppDialog } from '@/routes/apps/DeleteAppDialog';
 import { EditAppDialog } from '@/routes/apps/EditAppDialog';
 import type { AppPermission } from '@sigauth/prisma-wrapper/json-types';
 import type { App } from '@sigauth/prisma-wrapper/prisma-client';
@@ -15,6 +16,7 @@ export const AppsPage = () => {
     const { session } = useSession();
 
     const [configureApp, setConfigureApp] = useState<App | undefined>(undefined);
+    const [deleteApp, setDeleteApp] = useState<App | undefined>(undefined);
 
     return (
         <>
@@ -26,6 +28,7 @@ export const AppsPage = () => {
             <Card className="w-full py-2! p-2">
                 <CreateAppDialog />
                 <EditAppDialog app={configureApp} close={() => setConfigureApp(undefined)} />
+                <DeleteAppDialog app={deleteApp} close={() => setDeleteApp(undefined)} />
 
                 <Table>
                     <TableHeader>
@@ -91,7 +94,12 @@ export const AppsPage = () => {
                                     >
                                         <Edit className="h-4 w-4" />
                                     </Button>
-                                    <Button disabled={app.id == PROTECTED.App.id} variant="outline" size="icon">
+                                    <Button
+                                        disabled={app.id == PROTECTED.App.id}
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setDeleteApp(app)}
+                                    >
                                         <Trash className="h-4 w-4" />
                                     </Button>
                                 </TableCell>
