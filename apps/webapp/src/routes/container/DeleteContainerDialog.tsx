@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useSession } from '@/context/SessionContext';
 import { request } from '@/lib/utils';
-import type { Container } from '@sigauth/prisma-wrapper/prisma-client';
+import type { Container } from '@/types/container';
 
 interface DeleteContainerDialogProps {
     container?: Container;

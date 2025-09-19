@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { useSession } from '@/context/SessionContext';
 import { request } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Container } from '@sigauth/prisma-wrapper/prisma-client';
 import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
