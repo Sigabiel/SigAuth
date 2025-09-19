@@ -26,8 +26,7 @@ export const CreateContainerDialog = () => {
 
     const [open, setOpen] = useState(false);
     const [assetSelectorOpen, setAssetSelectorOpen] = useState(false);
-
-    const [appField, setAppField] = useState<string>('');
+    const [appSelectorOpen, setAppSelectorOpen] = useState(false);
 
     const submitToApi = async (values: z.infer<typeof formSchema>) => {
         const res = await request('POST', '/api/container/create', values);
@@ -40,7 +39,6 @@ export const CreateContainerDialog = () => {
             });
             setOpen(false);
             form.reset();
-            setAppField('');
         }
     };
 
@@ -53,40 +51,12 @@ export const CreateContainerDialog = () => {
         },
     });
 
-    // const addAsset = () => {
-    //     const assetId = parseInt(assetField);
-    //     if (isNaN(assetId) || assetId <= 0) return;
-
-    //     const asset = session.assets.find(a => a.id === assetId);
-    //     if (!asset) return;
-
-    //     const currentAssets = form.getValues('assets');
-    //     if (!currentAssets.includes(assetId)) {
-    //         form.setValue('assets', [...currentAssets, assetId]);
-    //     }
-    //     setAssetField('');
-    // };
-
     const removeAsset = (assetId: number) => {
         const currentAssets = form.getValues('assets');
         form.setValue(
             'assets',
             currentAssets.filter(id => id !== assetId),
         );
-    };
-
-    const addApp = () => {
-        const appId = parseInt(appField);
-        if (isNaN(appId) || appId <= 0) return;
-
-        const app = session.apps.find(a => a.id === appId);
-        if (!app) return;
-
-        const currentApps = form.getValues('apps');
-        if (!currentApps.includes(appId)) {
-            form.setValue('apps', [...currentApps, appId]);
-        }
-        setAppField('');
     };
 
     const removeApp = (appId: number) => {
@@ -104,12 +74,11 @@ export const CreateContainerDialog = () => {
                     <BadgePlus />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl flex flex-col gap-5 max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Create New Container</DialogTitle>
                     <DialogDescription>Create a new container to group assets and applications together.</DialogDescription>
                 </DialogHeader>
-
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(submitToApi)} className="space-y-8">
                         <FormField
@@ -144,7 +113,7 @@ export const CreateContainerDialog = () => {
                                                 <ChevronsUpDown className="opacity-50" />
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-[90%] p-0 !z-300">
+                                        <PopoverContent className="w-[90%] p-0 !z-300 pointer-events-auto">
                                             <Command>
                                                 <CommandInput placeholder="Search asset types..." className="h-9" />
                                                 <CommandList>
@@ -202,21 +171,57 @@ export const CreateContainerDialog = () => {
                                     })}
                                 </div>
                             </div>
+                        </div>
 
+                        <div className="space-y-4">
                             <div>
-                                <Label htmlFor="app-id">Applications</Label>
-                                <div className="flex gap-2 mt-2">
-                                    <Input
-                                        id="app-id"
-                                        placeholder="App ID"
-                                        type="number"
-                                        value={appField}
-                                        onChange={e => setAppField(e.target.value)}
-                                        onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addApp())}
-                                    />
-                                    <Button type="button" variant="outline" onClick={addApp}>
-                                        Add App
-                                    </Button>
+                                <Label htmlFor="app-id">Apps</Label>
+                                <div className="grid grid-cols-2 gap-3 mt-1.5">
+                                    <Input id="app-id" placeholder="Enter app ID" />
+                                    <Popover open={appSelectorOpen} onOpenChange={setAppSelectorOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={'outline'}
+                                                role="combobox"
+                                                aria-expanded={appSelectorOpen}
+                                                className="justify-between"
+                                            >
+                                                Select an app
+                                                <ChevronsUpDown className="opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[90%] p-0 !z-300">
+                                            <Command>
+                                                <CommandInput placeholder="Search asset types..." className="h-9" />
+                                                <CommandList>
+                                                    <CommandEmpty>No apps found.</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {session.apps
+                                                            .filter(
+                                                                app => app.id != PROTECTED.App.id && !form.watch('apps').includes(app.id),
+                                                            )
+                                                            .map(app => (
+                                                                <CommandItem
+                                                                    key={app.id}
+                                                                    onSelect={() => {
+                                                                        setAppSelectorOpen(false);
+                                                                        form.setValue('apps', [...form.getValues('apps'), app.id]);
+                                                                    }}
+                                                                >
+                                                                    {app.name}
+                                                                    <Check
+                                                                        className={cn(
+                                                                            'ml-auto',
+                                                                            app.id === form.watch('apps')[0] ? 'opacity-100' : 'opacity-0',
+                                                                        )}
+                                                                    />
+                                                                </CommandItem>
+                                                            ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {form.watch('apps').map(appId => {
