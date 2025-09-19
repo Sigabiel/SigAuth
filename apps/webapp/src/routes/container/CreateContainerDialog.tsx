@@ -74,7 +74,7 @@ export const CreateContainerDialog = () => {
                     <BadgePlus />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl flex flex-col gap-5 max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl flex flex-col gap-5">
                 <DialogHeader>
                     <DialogTitle>Create New Container</DialogTitle>
                     <DialogDescription>Create a new container to group assets and applications together.</DialogDescription>
