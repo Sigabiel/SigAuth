@@ -83,7 +83,7 @@ export class AuthenticationService {
             )
         ) {
             const [accounts, assets, assetTypes, apps, containers] = await Promise.all([
-                this.prisma.account.findMany(),
+                this.prisma.account.findMany({ include: { permissions: true } }),
                 this.prisma.asset.findMany(),
                 this.prisma.assetType.findMany(),
                 this.prisma.app.findMany(),
@@ -94,6 +94,7 @@ export class AuthenticationService {
         } else {
             const accounts = await this.prisma.account.findMany({
                 where: { id: { in: account.accounts as number[] } },
+                include: { permissions: true },
             });
 
             const apps = await this.prisma.app.findMany({

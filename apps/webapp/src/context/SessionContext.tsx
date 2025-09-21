@@ -1,10 +1,11 @@
-import type { Account, App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client';
+import type { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
+import type { App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client';
 import { createContext, use, useState, type ReactNode } from 'react';
 
 export type SessionStorage = {
-    account?: Account;
+    account?: AccountWithPermissions;
     session?: Session;
-    accounts: Account[];
+    accounts: AccountWithPermissions[];
     assetTypes: AssetType[];
     assets: Asset[];
     apps: App[];
