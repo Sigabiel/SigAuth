@@ -12,8 +12,8 @@ import { useState } from 'react';
 export const ContainerPage: React.FC = () => {
     const { session } = useSession();
 
-    const [editContainer, setEditContainer] = useState<Container | null>(null);
-    const [deleteContainer, setDeleteContainer] = useState<Container | null>(null);
+    const [editContainer, setEditContainer] = useState<Container | undefined>(undefined);
+    const [deleteContainer, setDeleteContainer] = useState<Container | undefined>(undefined);
 
     return (
         <>
@@ -24,7 +24,7 @@ export const ContainerPage: React.FC = () => {
 
             <Card className="w-full py-2! p-2">
                 <CreateContainerDialog />
-                <DeleteContainerDialog container={deleteContainer} close={() => setDeleteContainer(null)} />
+                <DeleteContainerDialog container={deleteContainer} close={() => setDeleteContainer(undefined)} />
 
                 <Table>
                     <TableHeader>
