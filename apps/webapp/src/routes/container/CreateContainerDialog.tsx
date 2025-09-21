@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSession } from '@/context/SessionContext';
 import { cn, request } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -64,14 +65,22 @@ export const CreateContainerDialog = () => {
             if (id.includes('-')) {
                 const [start, end] = id.split('-').map(Number);
                 for (let i = start; i <= end; i++) {
-                    if (!session.assets.find(a => a.id === i) || form.getValues('assets').includes(i)) {
+                    if (
+                        !session.assets.find(a => a.id === i) ||
+                        //TODO session.assets.find(a => a.id === Number(id))?.typeId == PROTECTED.AssetType.id ||
+                        form.getValues('assets').includes(i)
+                    ) {
                         notfoundIds.push(i);
                         continue;
                     }
                     form.setValue('assets', [...form.getValues('assets'), i]);
                 }
             } else {
-                if (!session.assets.find(a => a.id === Number(id)) || form.getValues('assets').includes(Number(id))) {
+                if (
+                    !session.assets.find(a => a.id === Number(id)) ||
+                    //TODO session.assets.find(a => a.id === Number(id))?.typeId == PROTECTED.AssetType.id ||
+                    form.getValues('assets').includes(Number(id))
+                ) {
                     notfoundIds.push(Number(id));
                     continue;
                 }
@@ -209,36 +218,38 @@ export const CreateContainerDialog = () => {
                                         </Popover>
                                     </div>
                                 </div>
-                                <div
-                                    className="flex flex-wrap gap-2 mt-2 border-2 border-dashed p-2 rounded-md min-h-[40px]"
+                                <ScrollArea
+                                    className="mt-2 border-2 border-dashed p-2 rounded-md h-[80px]"
                                     hidden={form.watch('assets').length == 0}
                                 >
-                                    {form.watch('assets').map(assetId => {
-                                        const asset = session.assets.find(a => a.id === assetId);
-                                        return (
-                                            <Badge key={assetId}>
-                                                <button
-                                                    className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-1 -me-1 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
-                                                    aria-label="Close"
-                                                    onClick={() =>
-                                                        form.setValue(
-                                                            'assets',
-                                                            [...form.getValues('assets').filter(id => id !== assetId)],
-                                                            {
-                                                                shouldValidate: true,
-                                                                shouldDirty: true,
-                                                                shouldTouch: true,
-                                                            },
-                                                        )
-                                                    }
-                                                >
-                                                    <XIcon className="size-3" aria-hidden="true" />
-                                                </button>
-                                                {asset?.name || `Unknown ${assetId}`}{' '}
-                                            </Badge>
-                                        );
-                                    })}
-                                </div>
+                                    <div className="flex flex-wrap gap-1">
+                                        {form.watch('assets').map(assetId => {
+                                            const asset = session.assets.find(a => a.id === assetId);
+                                            return (
+                                                <Badge key={assetId}>
+                                                    <button
+                                                        className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-1 -me-1 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+                                                        aria-label="Close"
+                                                        onClick={() =>
+                                                            form.setValue(
+                                                                'assets',
+                                                                [...form.getValues('assets').filter(id => id !== assetId)],
+                                                                {
+                                                                    shouldValidate: true,
+                                                                    shouldDirty: true,
+                                                                    shouldTouch: true,
+                                                                },
+                                                            )
+                                                        }
+                                                    >
+                                                        <XIcon className="size-3" aria-hidden="true" />
+                                                    </button>
+                                                    {asset?.name || `Unknown ${assetId}`}{' '}
+                                                </Badge>
+                                            );
+                                        })}
+                                    </div>
+                                </ScrollArea>
                             </div>
                         </div>
 
@@ -291,32 +302,34 @@ export const CreateContainerDialog = () => {
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <div
-                                    className="flex flex-wrap gap-2 mt-2 border-2 border-dashed p-2 rounded-md min-h-[40px] "
+                                <ScrollArea
+                                    className="mt-2 border-2 border-dashed p-2 rounded-md h-[42px]"
                                     hidden={form.watch('apps').length == 0}
                                 >
-                                    {form.watch('apps').map(appId => {
-                                        const app = session.apps.find(a => a.id === appId);
-                                        return (
-                                            <Badge key={appId}>
-                                                <button
-                                                    className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-1 -me-1 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
-                                                    aria-label="Close"
-                                                    onClick={() =>
-                                                        form.setValue('apps', [...form.getValues('apps').filter(id => id !== appId)], {
-                                                            shouldValidate: true,
-                                                            shouldDirty: true,
-                                                            shouldTouch: true,
-                                                        })
-                                                    }
-                                                >
-                                                    <XIcon className="size-3" aria-hidden="true" />
-                                                </button>
-                                                {app?.name || `Unknown ${appId}`}{' '}
-                                            </Badge>
-                                        );
-                                    })}
-                                </div>
+                                    <div className="flex flex-wrap gap-1">
+                                        {form.watch('apps').map(appId => {
+                                            const app = session.apps.find(a => a.id === appId);
+                                            return (
+                                                <Badge key={appId}>
+                                                    <button
+                                                        className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-1 -me-1 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+                                                        aria-label="Close"
+                                                        onClick={() =>
+                                                            form.setValue('apps', [...form.getValues('apps').filter(id => id !== appId)], {
+                                                                shouldValidate: true,
+                                                                shouldDirty: true,
+                                                                shouldTouch: true,
+                                                            })
+                                                        }
+                                                    >
+                                                        <XIcon className="size-3" aria-hidden="true" />
+                                                    </button>
+                                                    {app?.name || `Unknown ${appId}`}{' '}
+                                                </Badge>
+                                            );
+                                        })}
+                                    </div>
+                                </ScrollArea>
                             </div>
                         </div>
 
