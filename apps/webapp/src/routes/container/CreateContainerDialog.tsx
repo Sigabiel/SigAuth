@@ -103,9 +103,9 @@ export const CreateContainerDialog = () => {
                         onSubmit={(e: React.FormEvent) => {
                             e.preventDefault();
                             toast.promise(form.handleSubmit(submitToApi), {
-                                loading: 'Creating app...',
-                                success: 'App created successfully',
-                                error: (err: any) => err?.message || 'Failed to create app',
+                                loading: 'Creating container...',
+                                success: 'Container created successfully',
+                                error: (err: any) => err?.message || 'Failed to create container',
                             });
                         }}
                         className="space-y-8"
