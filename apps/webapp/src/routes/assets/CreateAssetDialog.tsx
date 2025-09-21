@@ -33,6 +33,9 @@ export const CreateAssetDialog = () => {
     const [assetType, setAssetType] = useState<AssetType | null>(null);
     const [assetTypeSelectionOpen, setAssetTypeSelectionOpen] = useState(false);
 
+    const [containerIds, setContainerIds] = useState<number[]>([]);
+    const [containerSelectionOpen, setContainerSelectionOpen] = useState(false);
+
     const handleSubmit = async () => {
         if (!assetType) return;
         const name = (document.getElementById('create-name') as HTMLInputElement).value;
@@ -113,6 +116,58 @@ export const CreateAssetDialog = () => {
                                                             {type.name}
                                                             <Check
                                                                 className={cn('ml-auto', assetType === type ? 'opacity-100' : 'opacity-0')}
+                                                            />
+                                                        </CommandItem>
+                                                    ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
+
+                    {/* Container selection */}
+                    <div className="grid gap-1 mt-3">
+                        <Label htmlFor="name">Assign to container</Label>
+                        <div className="[&>:first-child]:w-full [&>:last-child]:!min-w-[90%]">
+                            <Popover open={containerSelectionOpen} onOpenChange={setContainerSelectionOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={'outline'}
+                                        role="combobox"
+                                        aria-expanded={containerSelectionOpen}
+                                        className="justify-between"
+                                    >
+                                        Select containers...
+                                        <ChevronsUpDown className="opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 !z-300">
+                                    <Command>
+                                        <CommandInput placeholder="Search containers..." className="h-9" />
+                                        <CommandList>
+                                            <CommandEmpty>No containers found.</CommandEmpty>
+                                            <CommandGroup>
+                                                {session.containers
+                                                    .filter(con => con.id != PROTECTED.Container.id)
+                                                    .map(con => (
+                                                        <CommandItem
+                                                            key={con.id}
+                                                            onSelect={() => {
+                                                                setContainerIds(prev =>
+                                                                    prev.includes(con.id)
+                                                                        ? prev.filter(id => id !== con.id)
+                                                                        : [...prev, con.id],
+                                                                );
+                                                            }}
+                                                        >
+                                                            {con.name}
+                                                            <Check
+                                                                className={cn(
+                                                                    'ml-auto',
+                                                                    containerIds.includes(con.id) ? 'opacity-100' : 'opacity-0',
+                                                                )}
                                                             />
                                                         </CommandItem>
                                                     ))}
