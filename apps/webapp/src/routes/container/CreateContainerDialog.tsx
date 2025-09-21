@@ -303,7 +303,7 @@ export const CreateContainerDialog = () => {
                                     </Popover>
                                 </div>
                                 <ScrollArea
-                                    className="mt-2 border-2 border-dashed p-2 rounded-md h-[42px]"
+                                    className="mt-2 border-2 border-dashed p-2 rounded-md h-[80px]"
                                     hidden={form.watch('apps').length == 0}
                                 >
                                     <div className="flex flex-wrap gap-1">
