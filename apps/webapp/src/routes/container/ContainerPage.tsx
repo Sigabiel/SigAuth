@@ -3,10 +3,17 @@ import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSession } from '@/context/SessionContext';
 import { CreateContainerDialog } from '@/routes/container/CreateContainerDialog';
+import { DeleteContainerDialog } from '@/routes/container/DeleteContainer';
+import type { Container } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { Edit, Trash } from 'lucide-react';
+import { useState } from 'react';
 
 export const ContainerPage: React.FC = () => {
     const { session } = useSession();
+
+    const [editContainer, setEditContainer] = useState<Container | null>(null);
+    const [deleteContainer, setDeleteContainer] = useState<Container | null>(null);
 
     return (
         <>
@@ -17,6 +24,7 @@ export const ContainerPage: React.FC = () => {
 
             <Card className="w-full py-2! p-2">
                 <CreateContainerDialog />
+                <DeleteContainerDialog container={deleteContainer} close={() => setDeleteContainer(null)} />
 
                 <Table>
                     <TableHeader>
@@ -40,10 +48,20 @@ export const ContainerPage: React.FC = () => {
                                     {session.accounts.filter(a => a.permissions.some(p => p.containerId == container.id)).length}
                                 </TableCell>
                                 <TableCell className="flex gap-2 items-center justify-end">
-                                    <Button variant="outline" size="icon">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setEditContainer(container)}
+                                        disabled={container.id === PROTECTED.Container.id}
+                                    >
                                         <Edit className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="outline" size="icon">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setDeleteContainer(container)}
+                                        disabled={container.id === PROTECTED.Container.id}
+                                    >
                                         <Trash className="h-4 w-4" />
                                     </Button>
                                 </TableCell>

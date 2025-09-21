@@ -43,7 +43,8 @@ export const DeleteContainerDialog = ({ container, close }: { container?: Contai
                     </div>
                     <AlertDialogTitle>Are you absolutely sure you want to delete?</AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
-                        This action cannot be undone. This will permanently delete the app and remove all related data with it.
+                        This action cannot be undone. This will permanently delete the container and remove all related authorization data
+                        with it.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -53,9 +54,9 @@ export const DeleteContainerDialog = ({ container, close }: { container?: Contai
                             className="bg-destructive dark:bg-destructive/60 hover:bg-destructive focus-visible:ring-destructive text-white"
                             onClick={() =>
                                 toast.promise(handleSubmit, {
-                                    loading: 'Deleting app...',
-                                    success: 'App deleted successfully',
-                                    error: 'Failed to delete app',
+                                    loading: 'Deleting container...',
+                                    success: 'Container deleted successfully',
+                                    error: 'Failed to delete container',
                                 })
                             }
                         >
