@@ -47,6 +47,7 @@ export const CreateAssetDialog = () => {
             assetTypeId: assetType.id,
             name: name,
             fields: assetFields,
+            containerIds,
         });
 
         setAssetFields({});
@@ -54,7 +55,15 @@ export const CreateAssetDialog = () => {
         if (res.ok) {
             const data = await res.json();
             console.log(data);
-            setSession({ assets: [...session.assets, data.asset] });
+            setSession({
+                assets: [...session.assets, data.asset],
+                containers: [
+                    ...session.containers.map(c => {
+                        const updated = data.updatedContainers.find((uc: AssetType) => uc.id === c.id);
+                        return updated ? updated : c;
+                    }),
+                ],
+            });
             return;
         }
         throw new Error('Failed to create asset');

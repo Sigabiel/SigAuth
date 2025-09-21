@@ -14,7 +14,7 @@ import {
     ApiOkResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Asset } from '@sigauth/prisma-wrapper/prisma-client';
+import { Asset, Container } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('asset')
 @UseGuards(AuthGuard)
@@ -25,7 +25,13 @@ export class AssetController {
 
     @Post('create')
     @UseGuards(IsRoot)
-    @ApiCreatedResponse({ description: 'Asset created successfully', example: { asset: { id: 1, name: 'test' } } })
+    @ApiCreatedResponse({
+        description: 'Asset created successfully',
+        example: {
+            asset: { id: 1, name: 'test' },
+            updatedContainers: [{ id: 3, name: 'container1', assets: [3], apps: [6] }],
+        },
+    })
     @ApiNotFoundResponse({ description: 'Asset type not found' })
     @ApiBadRequestResponse({
         description: 'There can be several reasons for this error (duplicate name, invalid id, etc.)',
@@ -35,7 +41,9 @@ export class AssetController {
             statusCode: 400,
         },
     })
-    async createAsset(@Body() createAssetDto: CreateAssetDto): Promise<{ asset: Asset }> {
+    async createAsset(
+        @Body() createAssetDto: CreateAssetDto,
+    ): Promise<{ asset: Asset; updatedContainers: Container[] }> {
         const asset = await this.assetsService.createOrUpdateAsset(
             undefined,
             createAssetDto.name,
@@ -44,7 +52,12 @@ export class AssetController {
             false,
         );
 
-        return { asset };
+        const updatedContainers: Container[] = [];
+        for (const containerId of createAssetDto.containerIds) {
+            updatedContainers.push(await this.assetsService.assignToContainer(asset.id, containerId));
+        }
+
+        return { asset, updatedContainers };
     }
 
     @Post('edit')

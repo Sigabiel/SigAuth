@@ -1,7 +1,7 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AssetFieldType, AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
-import { Asset } from '@sigauth/prisma-wrapper/prisma-client';
+import { Asset, Container } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 
 @Injectable()
@@ -71,6 +71,23 @@ export class AssetService {
                 name,
                 fields,
             },
+        });
+    }
+
+    async assignToContainer(assetId: number, containerId: number): Promise<Container> {
+        const asset = await this.prisma.asset.findUnique({ where: { id: assetId } });
+        if (!asset) throw new NotFoundException('Asset not found');
+
+        const container = await this.prisma.container.findUnique({ where: { id: containerId } });
+        if (!container) throw new NotFoundException('Container not found');
+
+        if ((container.assets as number[]).includes(assetId))
+            throw new BadRequestException('Asset is already assigned to this container');
+
+        container.assets = [...(container.assets as number[]), assetId];
+        return this.prisma.container.update({
+            where: { id: containerId },
+            data: { assets: container.assets },
         });
     }
 
