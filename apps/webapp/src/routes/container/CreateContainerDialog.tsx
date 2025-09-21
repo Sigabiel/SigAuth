@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PopoverTrigger } from '@/components/ui/popover';
@@ -115,8 +115,7 @@ export const CreateContainerDialog = () => {
                             name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Container name</FormLabel>
-                                    <FormDescription>The name of your container.</FormDescription>
+                                    <FormLabel>Container Name</FormLabel>
                                     <FormControl>
                                         <Input placeholder="e.g. Customer A" {...field} />
                                     </FormControl>
@@ -210,14 +209,16 @@ export const CreateContainerDialog = () => {
                                         </Popover>
                                     </div>
                                 </div>
-                                <div className="flex flex-wrap gap-2 mt-2">
+                                <div
+                                    className="flex flex-wrap gap-2 mt-2 border-2 border-dashed p-2 rounded-md min-h-[40px]"
+                                    hidden={form.watch('assets').length == 0}
+                                >
                                     {form.watch('assets').map(assetId => {
                                         const asset = session.assets.find(a => a.id === assetId);
                                         return (
                                             <Badge key={assetId}>
-                                                {asset?.name || `Unknown ${assetId}`}{' '}
                                                 <button
-                                                    className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-px -me-1.5 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+                                                    className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-1 -me-1 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
                                                     aria-label="Close"
                                                     onClick={() =>
                                                         form.setValue(
@@ -233,6 +234,7 @@ export const CreateContainerDialog = () => {
                                                 >
                                                     <XIcon className="size-3" aria-hidden="true" />
                                                 </button>
+                                                {asset?.name || `Unknown ${assetId}`}{' '}
                                             </Badge>
                                         );
                                     })}
@@ -289,14 +291,16 @@ export const CreateContainerDialog = () => {
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <div className="flex flex-wrap gap-2 mt-2">
+                                <div
+                                    className="flex flex-wrap gap-2 mt-2 border-2 border-dashed p-2 rounded-md min-h-[40px] "
+                                    hidden={form.watch('apps').length == 0}
+                                >
                                     {form.watch('apps').map(appId => {
                                         const app = session.apps.find(a => a.id === appId);
                                         return (
                                             <Badge key={appId}>
-                                                {app?.name || `Unknown ${appId}`}{' '}
                                                 <button
-                                                    className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-px -me-1.5 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+                                                    className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-1 -me-1 inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
                                                     aria-label="Close"
                                                     onClick={() =>
                                                         form.setValue('apps', [...form.getValues('apps').filter(id => id !== appId)], {
@@ -308,6 +312,7 @@ export const CreateContainerDialog = () => {
                                                 >
                                                     <XIcon className="size-3" aria-hidden="true" />
                                                 </button>
+                                                {app?.name || `Unknown ${appId}`}{' '}
                                             </Badge>
                                         );
                                     })}
