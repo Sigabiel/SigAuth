@@ -19,7 +19,7 @@ import { useSession } from '@/context/SessionContext';
 import { cn, request } from '@/lib/utils';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { AssetFieldType, type AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
-import { type AssetType } from '@sigauth/prisma-wrapper/prisma-client';
+import { type AssetType, type Container } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { CommandEmpty } from 'cmdk';
 import { BadgePlus, Check, ChevronsUpDown } from 'lucide-react';
@@ -33,6 +33,9 @@ export const CreateAssetDialog = () => {
     const [assetType, setAssetType] = useState<AssetType | null>(null);
     const [assetTypeSelectionOpen, setAssetTypeSelectionOpen] = useState(false);
 
+    const [containerIds, setContainerIds] = useState<number[]>([]);
+    const [containerSelectionOpen, setContainerSelectionOpen] = useState(false);
+
     const handleSubmit = async () => {
         if (!assetType) return;
         const name = (document.getElementById('create-name') as HTMLInputElement).value;
@@ -44,14 +47,22 @@ export const CreateAssetDialog = () => {
             assetTypeId: assetType.id,
             name: name,
             fields: assetFields,
+            containerIds,
         });
 
         setAssetFields({});
         setAssetType(null);
         if (res.ok) {
             const data = await res.json();
-            console.log(data);
-            setSession({ assets: [...session.assets, data.asset] });
+            setSession({
+                assets: [...session.assets, data.asset],
+                containers: [
+                    ...session.containers.map(c => {
+                        const updated = data.updatedContainers.find((uc: Container) => uc.id === c.id);
+                        return updated ? updated : c;
+                    }),
+                ],
+            });
             return;
         }
         throw new Error('Failed to create asset');
@@ -124,6 +135,58 @@ export const CreateAssetDialog = () => {
                         </div>
                     </div>
 
+                    {/* Container selection */}
+                    <div className="grid gap-1 mt-3">
+                        <Label htmlFor="name">Assign to container</Label>
+                        <div className="[&>:first-child]:w-full">
+                            <Popover open={containerSelectionOpen} onOpenChange={setContainerSelectionOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={'outline'}
+                                        role="combobox"
+                                        aria-expanded={containerSelectionOpen}
+                                        className="justify-between"
+                                    >
+                                        Select containers...
+                                        <ChevronsUpDown className="opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 !z-300">
+                                    <Command>
+                                        <CommandInput placeholder="Search containers..." className="h-9" />
+                                        <CommandList>
+                                            <CommandEmpty>No containers found.</CommandEmpty>
+                                            <CommandGroup>
+                                                {session.containers
+                                                    .filter(con => con.id != PROTECTED.Container.id)
+                                                    .map(con => (
+                                                        <CommandItem
+                                                            key={con.id}
+                                                            onSelect={() => {
+                                                                setContainerIds(prev =>
+                                                                    prev.includes(con.id)
+                                                                        ? prev.filter(id => id !== con.id)
+                                                                        : [...prev, con.id],
+                                                                );
+                                                            }}
+                                                        >
+                                                            {con.name}
+                                                            <Check
+                                                                className={cn(
+                                                                    'ml-auto',
+                                                                    containerIds.includes(con.id) ? 'opacity-100' : 'opacity-0',
+                                                                )}
+                                                            />
+                                                        </CommandItem>
+                                                    ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </div>
+
                     <ScrollArea className="w-full max-h-96 mt-3">
                         <div className="flex flex-col gap-3 m-1">
                             {assetType &&
@@ -167,7 +230,7 @@ export const CreateAssetDialog = () => {
                                 toast.promise(handleSubmit, {
                                     loading: 'Creating asset...',
                                     success: 'Asset created successfully',
-                                    error: (e: any) => e.message || 'Failed to create asset type',
+                                    error: (e: Error) => e.message || 'Failed to create asset type',
                                 })
                             }
                         >

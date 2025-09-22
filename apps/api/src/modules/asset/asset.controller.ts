@@ -14,7 +14,7 @@ import {
     ApiOkResponse,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Asset } from '@sigauth/prisma-wrapper/prisma-client';
+import { Asset, Container } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('asset')
 @UseGuards(AuthGuard)
@@ -25,8 +25,14 @@ export class AssetController {
 
     @Post('create')
     @UseGuards(IsRoot)
-    @ApiCreatedResponse({ description: 'Asset created successfully', example: { asset: { id: 1, name: 'test' } } })
-    @ApiNotFoundResponse({ description: 'Asset type not found' })
+    @ApiCreatedResponse({
+        description: 'Asset created successfully',
+        example: {
+            asset: { id: 1, name: 'test' },
+            updatedContainers: [{ id: 3, name: 'container1', assets: [3], apps: [6] }],
+        },
+    })
+    @ApiNotFoundResponse({ description: 'Asset type or container not found' })
     @ApiBadRequestResponse({
         description: 'There can be several reasons for this error (duplicate name, invalid id, etc.)',
         example: {
@@ -35,7 +41,9 @@ export class AssetController {
             statusCode: 400,
         },
     })
-    async createAsset(@Body() createAssetDto: CreateAssetDto): Promise<{ asset: Asset }> {
+    async createAsset(
+        @Body() createAssetDto: CreateAssetDto,
+    ): Promise<{ asset: Asset; updatedContainers: Container[] }> {
         const asset = await this.assetsService.createOrUpdateAsset(
             undefined,
             createAssetDto.name,
@@ -44,7 +52,12 @@ export class AssetController {
             false,
         );
 
-        return { asset };
+        const updatedContainers: Container[] = await this.assetsService.applyUsedContainers(
+            asset.id,
+            createAssetDto.containerIds || [],
+        );
+
+        return { asset, updatedContainers };
     }
 
     @Post('edit')
@@ -73,8 +86,8 @@ export class AssetController {
             statusCode: 400,
         },
     })
-    @ApiNotFoundResponse({ description: 'Asset or asset type not found' })
-    async editAsset(@Body() editAssetDto: EditAssetDto): Promise<{ asset: Asset }> {
+    @ApiNotFoundResponse({ description: 'Container, asset or asset type not found' })
+    async editAsset(@Body() editAssetDto: EditAssetDto): Promise<{ asset: Asset; updatedContainers: Container[] }> {
         const asset = await this.assetsService.createOrUpdateAsset(
             editAssetDto.assetId,
             editAssetDto.name,
@@ -82,7 +95,13 @@ export class AssetController {
             editAssetDto.fields,
             false,
         );
-        return { asset };
+
+        const updatedContainers: Container[] = await this.assetsService.applyUsedContainers(
+            asset.id,
+            editAssetDto.containerIds || [],
+        );
+
+        return { asset, updatedContainers };
     }
 
     @Post('delete')

@@ -96,7 +96,7 @@ export const CreateAppDialog = () => {
                                 toast.promise(form.handleSubmit(submitToApi), {
                                     loading: 'Creating app...',
                                     success: 'App created successfully',
-                                    error: (err: any) => err?.message || 'Failed to create app',
+                                    error: (err: Error) => err?.message || 'Failed to create app',
                                 });
                             }}
                             className="space-y-8"

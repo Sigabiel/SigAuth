@@ -105,7 +105,7 @@ export class AuthenticationService {
                 where: { id: { in: account.permissions.map(p => p.containerId).filter(id => id !== null) } },
             });
 
-            const assetIds = containers.map(c => c.assets as number[]).flat();
+            const assetIds = containers.map(c => c.assets).flat();
             const assets = await this.prisma.asset.findMany({
                 where: { id: { in: assetIds } },
             });
