@@ -106,7 +106,7 @@ export const EditAssetDialog = ({ asset, close }: { asset?: Asset; close: () => 
                                 toast.promise(handleSubmit, {
                                     loading: 'Submitting changes...',
                                     success: 'Asset edited successfully',
-                                    error: (e: any) => e.message || 'Failed to edit asset',
+                                    error: (e: Error) => e.message || 'Failed to edit asset',
                                 })
                             }
                         >

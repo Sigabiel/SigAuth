@@ -107,7 +107,7 @@ export class AppsService {
         for (const id of appIds) {
             const containers = await this.prisma.container.findMany({ where: { apps: { array_contains: { id } } } });
             for (const container of containers) {
-                container.apps = (container.apps as number[]).filter(c => c !== id);
+                container.apps = container.apps.filter(c => c !== id);
                 await this.prisma.container.update({ where: { id: container.id }, data: { apps: container.apps } });
             }
         }

@@ -110,7 +110,7 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
                                 toast.promise(form.handleSubmit(submitToApi), {
                                     loading: 'Editing app...',
                                     success: 'App edited successfully',
-                                    error: (err: any) => err?.message || 'Failed to edit app',
+                                    error: (err: Error) => err?.message || 'Failed to edit app',
                                 });
                             }}
                             className="space-y-8"
@@ -197,10 +197,10 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
 
                                             {((permissionField.length > 0 && permissionField.length < 3) ||
                                                 !/^[A-Z0-9 _-]*$/i.test(permissionField)) && (
-                                                <p data-slot="form-message" className="text-destructive text-sm mt-2">
-                                                    Permission must be at least 3 characters long and alphanumeric.
-                                                </p>
-                                            )}
+                                                    <p data-slot="form-message" className="text-destructive text-sm mt-2">
+                                                        Permission must be at least 3 characters long and alphanumeric.
+                                                    </p>
+                                                )}
                                         </div>
                                     )}
                                 </div>

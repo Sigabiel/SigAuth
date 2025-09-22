@@ -46,7 +46,7 @@ export class ContainerService {
         await this.prisma.container.update({
             where: { id: PROTECTED.Container.id },
             data: {
-                assets: [...(sigAuthContainer!.assets as number[]), containerAsset.id],
+                assets: [...sigAuthContainer!.assets, containerAsset.id],
             },
         });
 
@@ -66,8 +66,8 @@ export class ContainerService {
         const appCount = await this.prisma.app.count({ where: { id: { in: apps.map(a => a) } } });
         if (appCount != apps.length) throw new NotFoundException('Invalid apps');
 
-        const removedApps = (container.apps as number[]).filter(a => !apps.includes(a));
-        const removedAssets = (container.assets as number[]).filter(a => !assets.includes(a));
+        const removedApps = container.apps.filter(a => !apps.includes(a));
+        const removedAssets = container.assets.filter(a => !assets.includes(a));
 
         if (removedApps.length > 0) {
             await this.prisma.permissionInstance.deleteMany({

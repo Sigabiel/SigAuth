@@ -107,7 +107,7 @@ export class AssetService {
         }
 
         for (const container of containers) {
-            container.assets = (container.assets as number[]).filter(n => ids.includes(n));
+            container.assets = container.assets.filter(n => ids.includes(n));
             await this.prisma.container.update({
                 where: { id: container.id },
                 data: { assets: container.assets || [] },

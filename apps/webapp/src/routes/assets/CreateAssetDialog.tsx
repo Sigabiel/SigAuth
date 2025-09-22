@@ -231,7 +231,7 @@ export const CreateAssetDialog = () => {
                                 toast.promise(handleSubmit, {
                                     loading: 'Creating asset...',
                                     success: 'Asset created successfully',
-                                    error: (e: any) => e.message || 'Failed to create asset type',
+                                    error: (e: Error) => e.message || 'Failed to create asset type',
                                 })
                             }
                         >

@@ -122,7 +122,7 @@ export class AssetTypesService {
         for (const type of assetTypes) {
             const assets = await this.prisma.asset.findMany({ where: { typeId: type.id } });
             for (const container of containers) {
-                container.assets = (container.assets as number[]).filter(id => !assets.find(a => a.id === id));
+                container.assets = container.assets.filter(id => !assets.find(a => a.id === id));
             }
 
             await this.prisma.permissionInstance.deleteMany({
