@@ -54,7 +54,7 @@ export class AssetController {
 
         const updatedContainers: Container[] = [];
         for (const containerId of createAssetDto.containerIds) {
-            updatedContainers.push(await this.assetsService.assignToContainer(asset.id, containerId));
+            updatedContainers.push(await this.assetsService.applyUsedContainers(asset.id, containerId));
         }
 
         return { asset, updatedContainers };

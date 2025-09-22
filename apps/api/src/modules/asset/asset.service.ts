@@ -74,13 +74,14 @@ export class AssetService {
         });
     }
 
-    async assignToContainer(assetId: number, containerId: number): Promise<Container> {
+    async applyUsedContainers(assetId: number, containerIds: number[]): Promise<Container> {
         const asset = await this.prisma.asset.findUnique({ where: { id: assetId } });
         if (!asset) throw new NotFoundException('Asset not found');
 
-        const container = await this.prisma.container.findUnique({ where: { id: containerId } });
-        if (!container) throw new NotFoundException('Container not found');
+        const containers = await this.prisma.container.findMany({ where: { id: { in: containerIds } } });
+        if (containers.length == containerIds.length) throw new NotFoundException('Container not found');
 
+        const appliedContainers = this.prisma.container.findMany({ where: { assets: { has: assetId } } });
         if ((container.assets as number[]).includes(assetId))
             throw new BadRequestException('Asset is already assigned to this container');
 
