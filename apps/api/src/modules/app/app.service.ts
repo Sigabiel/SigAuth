@@ -105,7 +105,7 @@ export class AppsService {
 
         // todo this can be in a single query if we had a container-app relation table
         for (const id of appIds) {
-            const containers = await this.prisma.container.findMany({ where: { apps: { array_contains: { id } } } });
+            const containers = await this.prisma.container.findMany({ where: { apps: { has: id } } });
             for (const container of containers) {
                 container.apps = container.apps.filter(c => c !== id);
                 await this.prisma.container.update({ where: { id: container.id }, data: { apps: container.apps } });

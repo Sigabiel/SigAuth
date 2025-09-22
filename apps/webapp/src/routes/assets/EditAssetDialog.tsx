@@ -1,13 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSession } from '@/context/SessionContext';
-import { request } from '@/lib/utils';
+import { cn, request } from '@/lib/utils';
 import { AssetFieldType, type AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
-import { type Asset } from '@sigauth/prisma-wrapper/prisma-client';
+import { type Asset, type Container } from '@sigauth/prisma-wrapper/prisma-client';
+import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -16,11 +20,15 @@ export const EditAssetDialog = ({ asset, close }: { asset?: Asset; close: () => 
 
     const [assetFields, setAssetFields] = useState<Record<string, string | number | boolean>>({});
 
+    const [containerIds, setContainerIds] = useState<number[]>([]);
+    const [containerSelectionOpen, setContainerSelectionOpen] = useState(false);
+
     const assetType = useMemo(() => session.assetTypes.find(type => type.id === asset?.typeId) || null, [asset]);
 
     useEffect(() => {
         if (asset) {
             setAssetFields((asset.fields as Record<string, string | number | boolean>) || {});
+            setContainerIds(session.containers.filter(con => con.assets.includes(asset.id)).map(c => c.id));
         }
     }, [asset]);
 
@@ -35,12 +43,19 @@ export const EditAssetDialog = ({ asset, close }: { asset?: Asset; close: () => 
             assetId: asset.id,
             name,
             fields: assetFields,
+            containerIds,
         });
 
         close();
         if (res.ok) {
             const data = await res.json();
-            setSession({ assets: session.assets.map(a => (a.id === asset.id ? data.asset : a)) });
+            setSession({
+                assets: session.assets.map(a => (a.id === asset.id ? data.asset : a)),
+                containers: session.containers.map(c => {
+                    const updated = data.updatedContainers.find((uc: Container) => uc.id === c.id);
+                    return updated ? updated : c;
+                }),
+            });
             return;
         }
         throw new Error('Failed to edit asset');
@@ -60,6 +75,58 @@ export const EditAssetDialog = ({ asset, close }: { asset?: Asset; close: () => 
                     <div className="grid gap-3">
                         <Label htmlFor="edit-name">Name</Label>
                         <Input id="edit-name" name="name" placeholder="e.G Back to the Future 3" defaultValue={asset.name} />
+                    </div>
+
+                    {/* Container selection */}
+                    <div className="grid gap-1 mt-3">
+                        <Label htmlFor="name">Assign to container</Label>
+                        <div className="[&>:first-child]:w-full [&>:last-child]:!min-w-[90%]">
+                            <Popover open={containerSelectionOpen} onOpenChange={setContainerSelectionOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={'outline'}
+                                        role="combobox"
+                                        aria-expanded={containerSelectionOpen}
+                                        className="justify-between"
+                                    >
+                                        Select containers...
+                                        <ChevronsUpDown className="opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 !z-300">
+                                    <Command>
+                                        <CommandInput placeholder="Search containers..." className="h-9" />
+                                        <CommandList>
+                                            <CommandEmpty>No containers found.</CommandEmpty>
+                                            <CommandGroup>
+                                                {session.containers
+                                                    .filter(con => con.id != PROTECTED.Container.id)
+                                                    .map(con => (
+                                                        <CommandItem
+                                                            key={con.id}
+                                                            onSelect={() => {
+                                                                setContainerIds(prev =>
+                                                                    prev.includes(con.id)
+                                                                        ? prev.filter(id => id !== con.id)
+                                                                        : [...prev, con.id],
+                                                                );
+                                                            }}
+                                                        >
+                                                            {con.name}
+                                                            <Check
+                                                                className={cn(
+                                                                    'ml-auto',
+                                                                    containerIds.includes(con.id) ? 'opacity-100' : 'opacity-0',
+                                                                )}
+                                                            />
+                                                        </CommandItem>
+                                                    ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
                     </div>
 
                     <ScrollArea className="w-full max-h-96 mt-3">

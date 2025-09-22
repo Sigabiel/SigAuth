@@ -19,7 +19,7 @@ import { useSession } from '@/context/SessionContext';
 import { cn, request } from '@/lib/utils';
 import { PopoverContent } from '@radix-ui/react-popover';
 import { AssetFieldType, type AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
-import { type AssetType } from '@sigauth/prisma-wrapper/prisma-client';
+import { type AssetType, type Container } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { CommandEmpty } from 'cmdk';
 import { BadgePlus, Check, ChevronsUpDown } from 'lucide-react';
@@ -54,12 +54,11 @@ export const CreateAssetDialog = () => {
         setAssetType(null);
         if (res.ok) {
             const data = await res.json();
-            console.log(data);
             setSession({
                 assets: [...session.assets, data.asset],
                 containers: [
                     ...session.containers.map(c => {
-                        const updated = data.updatedContainers.find((uc: AssetType) => uc.id === c.id);
+                        const updated = data.updatedContainers.find((uc: Container) => uc.id === c.id);
                         return updated ? updated : c;
                     }),
                 ],
@@ -139,7 +138,7 @@ export const CreateAssetDialog = () => {
                     {/* Container selection */}
                     <div className="grid gap-1 mt-3">
                         <Label htmlFor="name">Assign to container</Label>
-                        <div className="[&>:first-child]:w-full [&>:last-child]:!min-w-[90%]">
+                        <div className="[&>:first-child]:w-full">
                             <Popover open={containerSelectionOpen} onOpenChange={setContainerSelectionOpen}>
                                 <PopoverTrigger asChild>
                                     <Button

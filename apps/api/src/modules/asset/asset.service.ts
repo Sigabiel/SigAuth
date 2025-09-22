@@ -77,8 +77,10 @@ export class AssetService {
     async applyUsedContainers(assetId: number, containerIds: number[]): Promise<Container[]> {
         const asset = await this.prisma.asset.findUnique({ where: { id: assetId } });
         if (!asset) throw new NotFoundException('Asset not found');
+        if (containerIds.includes(PROTECTED.Container.id))
+            throw new BadRequestException('Cannot modify protected container');
 
-        if ((await this.prisma.container.count({ where: { id: { in: containerIds } } })) == containerIds.length)
+        if ((await this.prisma.container.count({ where: { id: { in: containerIds } } })) != containerIds.length)
             throw new NotFoundException('Container not found');
 
         const appliedContainers = await this.prisma.container.findMany({ where: { assets: { has: assetId } } });
