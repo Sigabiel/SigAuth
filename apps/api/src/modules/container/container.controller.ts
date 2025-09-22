@@ -87,13 +87,15 @@ export class ContainerController {
             statusCode: 400,
         },
     })
-    async editContainer(@Body() editContainerDto: EditContainerDto): Promise<Container> {
-        return this.containerService.editContainer(
-            editContainerDto.id,
-            editContainerDto.name,
-            editContainerDto.assets,
-            editContainerDto.apps,
-        );
+    async editContainer(@Body() editContainerDto: EditContainerDto): Promise<{ container: Container }> {
+        return {
+            container: await this.containerService.editContainer(
+                editContainerDto.id,
+                editContainerDto.name,
+                editContainerDto.assets,
+                editContainerDto.apps,
+            ),
+        };
     }
 
     @Post('delete')

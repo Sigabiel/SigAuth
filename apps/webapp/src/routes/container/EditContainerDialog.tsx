@@ -11,9 +11,10 @@ import { useSession } from '@/context/SessionContext';
 import { cn, request } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Popover, PopoverContent } from '@radix-ui/react-popover';
+import type { Container } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { BadgePlus, Check, ChevronsUpDown, XIcon } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -24,36 +25,48 @@ const formSchema = z.object({
     apps: z.array(z.number()),
 });
 
-export const CreateContainerDialog = () => {
+export const EditContainerDialog = ({ container, close }: { container?: Container; close: () => void }) => {
     const { session, setSession } = useSession();
 
-    const [open, setOpen] = useState(false);
     const [assetSelectorOpen, setAssetSelectorOpen] = useState(false);
     const [assetIdField, setAssetIdField] = useState('');
     const [appSelectorOpen, setAppSelectorOpen] = useState(false);
 
     const submitToApi = async (values: z.infer<typeof formSchema>) => {
-        const res = await request('POST', '/api/container/create', values);
+        if (!container) return;
+        const res = await request('POST', '/api/container/edit', { id: container.id, ...values });
 
         if (res.ok) {
             const data = await res.json();
+            console.log(data.container, container, container.id, session.containers);
             setSession({
-                containers: [...session.containers, data.container],
-                assets: [...session.assets, data.containerAsset],
+                containers: session.containers.map(c => (c.id === container.id ? data.container : c)),
             });
-            setOpen(false);
+            close();
             form.reset();
+        } else {
+            throw new Error();
         }
     };
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: '',
-            assets: [],
-            apps: [],
+            name: container?.name || '',
+            assets: container?.assets || [],
+            apps: container?.apps || [],
         },
     });
+
+    useEffect(() => {
+        if (container) {
+            form.reset({
+                name: container.name,
+                assets: container.assets,
+                apps: container.apps,
+            });
+        }
+    }, [container]);
 
     const isAssetIdFieldValid = useMemo(() => /^\d*(?:[,-]\d+)*$/.test(assetIdField), [assetIdField]);
 
@@ -95,8 +108,9 @@ export const CreateContainerDialog = () => {
         }
     };
 
+    if (!container) return <></>;
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={!!container} onOpenChange={close}>
             <DialogTrigger asChild>
                 <Button variant="ghost" className="w-fit">
                     <BadgePlus />
@@ -104,17 +118,17 @@ export const CreateContainerDialog = () => {
             </DialogTrigger>
             <DialogContent className="max-w-3xl flex flex-col gap-5">
                 <DialogHeader>
-                    <DialogTitle>Create New Container</DialogTitle>
-                    <DialogDescription>Create a new container to group assets and applications together.</DialogDescription>
+                    <DialogTitle>Edit {container.name}</DialogTitle>
+                    <DialogDescription>Edit the container to group assets and applications together.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form
                         onSubmit={(e: React.FormEvent) => {
                             e.preventDefault();
                             toast.promise(form.handleSubmit(submitToApi), {
-                                loading: 'Creating container...',
-                                success: 'Container created successfully',
-                                error: (err: any) => err?.message || 'Failed to create container',
+                                loading: 'Submitting changes...',
+                                success: 'Container edited successfully',
+                                error: (err: any) => err?.message || 'Failed to edit container',
                             });
                         }}
                         className="space-y-8"
@@ -334,7 +348,7 @@ export const CreateContainerDialog = () => {
                         </div>
 
                         <DialogFooter>
-                            <Button type="submit">Create Container</Button>
+                            <Button type="submit">Edit Container</Button>
                         </DialogFooter>
                     </form>
                 </Form>

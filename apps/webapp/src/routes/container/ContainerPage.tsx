@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useSession } from '@/context/SessionContext';
 import { CreateContainerDialog } from '@/routes/container/CreateContainerDialog';
 import { DeleteContainerDialog } from '@/routes/container/DeleteContainer';
+import { EditContainerDialog } from '@/routes/container/EditContainerDialog';
 import type { Container } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 import { Edit, Trash } from 'lucide-react';
@@ -25,6 +26,7 @@ export const ContainerPage: React.FC = () => {
             <Card className="w-full py-2! p-2">
                 <CreateContainerDialog />
                 <DeleteContainerDialog container={deleteContainer} close={() => setDeleteContainer(undefined)} />
+                <EditContainerDialog container={editContainer} close={() => setEditContainer(undefined)} />
 
                 <Table>
                     <TableHeader>
@@ -42,8 +44,8 @@ export const ContainerPage: React.FC = () => {
                             <TableRow key={container.id}>
                                 <TableCell className="w-[100px]">{container.id}</TableCell>
                                 <TableCell>{container.name}</TableCell>
-                                <TableCell>{(container.assets as number[]).length}</TableCell>
-                                <TableCell>{(container.apps as string[]).length}</TableCell>
+                                <TableCell>{container.assets.length}</TableCell>
+                                <TableCell>{container.apps.length}</TableCell>
                                 <TableCell>
                                     {session.accounts.filter(a => a.permissions.some(p => p.containerId == container.id)).length}
                                 </TableCell>
