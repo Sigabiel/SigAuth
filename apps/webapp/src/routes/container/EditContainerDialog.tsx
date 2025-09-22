@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -111,11 +111,6 @@ export const EditContainerDialog = ({ container, close }: { container?: Containe
     if (!container) return <></>;
     return (
         <Dialog open={!!container} onOpenChange={close}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" className="w-fit">
-                    <BadgePlus />
-                </Button>
-            </DialogTrigger>
             <DialogContent className="max-w-3xl flex flex-col gap-5">
                 <DialogHeader>
                     <DialogTitle>Edit {container.name}</DialogTitle>
