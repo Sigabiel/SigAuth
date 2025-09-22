@@ -74,22 +74,34 @@ export class AssetService {
         });
     }
 
-    async applyUsedContainers(assetId: number, containerIds: number[]): Promise<Container> {
+    async applyUsedContainers(assetId: number, containerIds: number[]): Promise<Container[]> {
         const asset = await this.prisma.asset.findUnique({ where: { id: assetId } });
         if (!asset) throw new NotFoundException('Asset not found');
 
-        const containers = await this.prisma.container.findMany({ where: { id: { in: containerIds } } });
-        if (containers.length == containerIds.length) throw new NotFoundException('Container not found');
+        if ((await this.prisma.container.count({ where: { id: { in: containerIds } } })) == containerIds.length)
+            throw new NotFoundException('Container not found');
 
-        const appliedContainers = this.prisma.container.findMany({ where: { assets: { has: assetId } } });
-        if ((container.assets as number[]).includes(assetId))
-            throw new BadRequestException('Asset is already assigned to this container');
+        const appliedContainers = await this.prisma.container.findMany({ where: { assets: { has: assetId } } });
+        const added = containerIds.filter(id => !appliedContainers.find(c => c.id == id));
+        const removed = appliedContainers.filter(c => !containerIds.includes(c.id));
 
-        container.assets = [...(container.assets as number[]), assetId];
-        return this.prisma.container.update({
-            where: { id: containerId },
-            data: { assets: container.assets },
-        });
+        for (const container of removed) {
+            await this.prisma.container.update({
+                where: { id: container.id },
+                data: { assets: { set: container.assets.filter(i => i != asset.id) } },
+            });
+        }
+
+        for (const containerId of added) {
+            await this.prisma.container.update({
+                where: { id: containerId },
+                data: {
+                    assets: { push: asset.id },
+                },
+            });
+        }
+
+        return await this.prisma.container.findMany({ where: { assets: { has: assetId } } });
     }
 
     async deleteAssets(ids: number[]): Promise<Asset[]> {

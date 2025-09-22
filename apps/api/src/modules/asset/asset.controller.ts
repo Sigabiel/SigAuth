@@ -32,7 +32,7 @@ export class AssetController {
             updatedContainers: [{ id: 3, name: 'container1', assets: [3], apps: [6] }],
         },
     })
-    @ApiNotFoundResponse({ description: 'Asset type not found' })
+    @ApiNotFoundResponse({ description: 'Asset type or container not found' })
     @ApiBadRequestResponse({
         description: 'There can be several reasons for this error (duplicate name, invalid id, etc.)',
         example: {
@@ -52,10 +52,10 @@ export class AssetController {
             false,
         );
 
-        const updatedContainers: Container[] = [];
-        for (const containerId of createAssetDto.containerIds) {
-            updatedContainers.push(await this.assetsService.applyUsedContainers(asset.id, containerId));
-        }
+        const updatedContainers: Container[] = await this.assetsService.applyUsedContainers(
+            asset.id,
+            createAssetDto.containerIds || [],
+        );
 
         return { asset, updatedContainers };
     }
@@ -86,8 +86,8 @@ export class AssetController {
             statusCode: 400,
         },
     })
-    @ApiNotFoundResponse({ description: 'Asset or asset type not found' })
-    async editAsset(@Body() editAssetDto: EditAssetDto): Promise<{ asset: Asset }> {
+    @ApiNotFoundResponse({ description: 'Container, asset or asset type not found' })
+    async editAsset(@Body() editAssetDto: EditAssetDto): Promise<{ asset: Asset; updatedContainers: Container[] }> {
         const asset = await this.assetsService.createOrUpdateAsset(
             editAssetDto.assetId,
             editAssetDto.name,
@@ -95,7 +95,13 @@ export class AssetController {
             editAssetDto.fields,
             false,
         );
-        return { asset };
+
+        const updatedContainers: Container[] = await this.assetsService.applyUsedContainers(
+            asset.id,
+            editAssetDto.containerIds || [],
+        );
+
+        return { asset, updatedContainers };
     }
 
     @Post('delete')
