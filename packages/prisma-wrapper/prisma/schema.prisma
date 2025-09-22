@@ -84,8 +84,8 @@ model Asset {
 model Container {
   id                 Int                  @id @default(autoincrement())
   name               String
-  assets             Json                 @default("[]") // number array with the ids of the asset
-  apps               Json                 @default("[]") // number array with the ids of the apps
+  assets             Int[]                @default([])
+  apps               Int[]                @default([])
   PermissionInstance PermissionInstance[]
 }
 

@@ -1,7 +1,7 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AssetFieldType, AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
-import { Asset } from '@sigauth/prisma-wrapper/prisma-client';
+import { Asset, Container } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
 
 @Injectable()
@@ -74,6 +74,38 @@ export class AssetService {
         });
     }
 
+    async applyUsedContainers(assetId: number, containerIds: number[]): Promise<Container[]> {
+        const asset = await this.prisma.asset.findUnique({ where: { id: assetId } });
+        if (!asset) throw new NotFoundException('Asset not found');
+        if (containerIds.includes(PROTECTED.Container.id))
+            throw new BadRequestException('Cannot modify protected container');
+
+        if ((await this.prisma.container.count({ where: { id: { in: containerIds } } })) != containerIds.length)
+            throw new NotFoundException('Container not found');
+
+        const appliedContainers = await this.prisma.container.findMany({ where: { assets: { has: assetId } } });
+        const added = containerIds.filter(id => !appliedContainers.find(c => c.id == id));
+        const removed = appliedContainers.filter(c => !containerIds.includes(c.id));
+
+        for (const container of removed) {
+            await this.prisma.container.update({
+                where: { id: container.id },
+                data: { assets: { set: container.assets.filter(i => i != asset.id) } },
+            });
+        }
+
+        for (const containerId of added) {
+            await this.prisma.container.update({
+                where: { id: containerId },
+                data: {
+                    assets: { push: asset.id },
+                },
+            });
+        }
+
+        return await this.prisma.container.findMany({ where: { assets: { has: assetId } } });
+    }
+
     async deleteAssets(ids: number[]): Promise<Asset[]> {
         const assets = await this.prisma.asset.findMany({ where: { id: { in: ids } } });
         const containers = await this.prisma.container.findMany({ where: {} });
@@ -89,7 +121,7 @@ export class AssetService {
         }
 
         for (const container of containers) {
-            container.assets = (container.assets as number[]).filter(n => ids.includes(n));
+            container.assets = container.assets.filter(n => !ids.includes(n));
             await this.prisma.container.update({
                 where: { id: container.id },
                 data: { assets: container.assets || [] },

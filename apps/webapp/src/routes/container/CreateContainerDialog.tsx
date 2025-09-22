@@ -114,7 +114,7 @@ export const CreateContainerDialog = () => {
                             toast.promise(form.handleSubmit(submitToApi), {
                                 loading: 'Creating container...',
                                 success: 'Container created successfully',
-                                error: (err: any) => err?.message || 'Failed to create container',
+                                error: (err: Error) => err?.message || 'Failed to create container',
                             });
                         }}
                         className="space-y-8"
