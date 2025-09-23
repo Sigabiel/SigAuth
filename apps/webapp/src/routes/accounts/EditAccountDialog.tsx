@@ -1,18 +1,18 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useSession } from '@/context/SessionContext';
 import { request } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BadgePlus } from 'lucide-react';
-import { useState } from 'react';
+import type { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-export const CreateAccountDialog = () => {
+export const EditAccountDialog = ({ account, close }: { account?: AccountWithPermissions; close: () => void }) => {
     const { session, setSession } = useSession();
 
     const formSchema = z.object({
@@ -21,13 +21,7 @@ export const CreateAccountDialog = () => {
             .regex(/^[a-zA-Z0-9_-]+$/, 'Only Letters, Digits, - and _ allowed, no spaces')
             .min(4, 'Name must be at least 4 characters long')
             .refine(val => session.accounts.findIndex(a => a.name === val) === -1, { message: 'An account with this name already exists' }),
-        password: z
-            .string()
-            .min(8, 'Password must be at least 8 characters long')
-            .regex(
-                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,
-                'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-            ),
+        password: z.string().optional(),
         email: z
             .string()
             .email('Invalid email address')
@@ -37,15 +31,32 @@ export const CreateAccountDialog = () => {
         apiAccess: z.boolean(),
     });
 
-    const [open, setOpen] = useState(false);
-
     const submitToApi = async (values: z.infer<typeof formSchema>) => {
-        const res = await request('POST', '/api/account/create', values);
+        if (!account) return;
+        if (
+            values.password &&
+            values.password.length > 0 &&
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(values.password)
+        ) {
+            throw new Error(
+                'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+            );
+        }
+
+        const updateData: { id: number; name?: string; password?: string; email?: string; apiAccess: boolean } = {
+            id: account.id,
+            apiAccess: values.apiAccess,
+        };
+        if (values.name && values.name.length > 0) updateData.name = values.name;
+        if (values.password && values.password.length > 0) updateData.password = values.password;
+        if (values.email && values.email.length > 0) updateData.email = values.email;
+
+        const res = await request('POST', '/api/account/edit', updateData);
 
         if (res.ok) {
             const data = await res.json();
-            setSession({ accounts: [...session.accounts, data.account] });
-            setOpen(false);
+            setSession({ accounts: session.accounts.map(a => (a.id === account.id ? data.account : a)) });
+            close();
             return;
         }
         throw new Error((await res.json()).message || 'Failed to create account');
@@ -53,27 +64,26 @@ export const CreateAccountDialog = () => {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            name: '',
-            email: '',
-            password: '',
-            apiAccess: false,
-        },
         mode: 'onChange',
     });
 
+    useEffect(() => {
+        form.reset({
+            name: account?.name,
+            email: account?.email || '',
+            password: '',
+            apiAccess: !!account?.api || false,
+        });
+    }, [account]);
+
+    if (!account) return null;
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" className="w-fit">
-                    <BadgePlus />
-                </Button>
-            </DialogTrigger>
+        <Dialog open={!!account} onOpenChange={close}>
             <DialogContent className="!max-w-fit">
                 <DialogHeader>
-                    <DialogTitle>Create a new account</DialogTitle>
+                    <DialogTitle>Edit {account.name}</DialogTitle>
                     <DialogDescription>
-                        Define a new account here. You can create as many accounts as you want and fill them with data.
+                        Update {account.name} here. You can create as many accounts as you want and fill them with data.
                     </DialogDescription>
                 </DialogHeader>
                 <div>
@@ -81,11 +91,11 @@ export const CreateAccountDialog = () => {
                         <form
                             onSubmit={(e: React.FormEvent) => {
                                 e.preventDefault();
-                                if (!form.formState.isValid) return;
+                                if (Object.keys(form.formState.errors).length > 0) return;
                                 toast.promise(form.handleSubmit(submitToApi), {
-                                    loading: 'Creating account...',
-                                    success: 'Account created successfully',
-                                    error: (err: Error) => err?.message || 'Failed to create account',
+                                    loading: 'Submitting changes...',
+                                    success: 'Account updated successfully',
+                                    error: (err: Error) => err?.message || 'Failed to update account',
                                 });
                             }}
                             className="space-y-8"
@@ -113,7 +123,7 @@ export const CreateAccountDialog = () => {
                                         <FormLabel>Password</FormLabel>
                                         <FormDescription>Enter the password for your account.</FormDescription>
                                         <FormControl>
-                                            <Input placeholder="Pick something safe" {...field} />
+                                            <Input placeholder="Change if you want to update" {...field} />
                                         </FormControl>
                                         <ul className="list-disc pl-8 text-gray-400">
                                             <li>At least 8 characters long</li>
@@ -162,7 +172,7 @@ export const CreateAccountDialog = () => {
                                 )}
                             />
 
-                            <Button className="w-full" type="submit" disabled={!form.formState.isValid}>
+                            <Button className="w-full" type="submit" disabled={Object.keys(form.formState.errors).length > 0}>
                                 Submit
                             </Button>
                         </form>

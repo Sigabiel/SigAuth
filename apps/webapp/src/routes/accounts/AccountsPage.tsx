@@ -3,15 +3,17 @@ import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSession } from '@/context/SessionContext';
 import { CreateAccountDialog } from '@/routes/accounts/CreateAccountDialog';
-import type { Account } from '@sigauth/prisma-wrapper/prisma-client';
+import { DeleteAccountDialog } from '@/routes/accounts/DeleteAccountDialog';
+import { EditAccountDialog } from '@/routes/accounts/EditAccountDialog';
+import type { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Edit, Trash } from 'lucide-react';
 import { useState } from 'react';
 
 export const AccountsPage: React.FC = () => {
     const { session } = useSession();
 
-    const [editAccount, setEditAccount] = useState<Account | undefined>(undefined);
-    const [deleteAccount, setDeleteAccount] = useState<Account | undefined>(undefined);
+    const [editAccount, setEditAccount] = useState<AccountWithPermissions | undefined>(undefined);
+    const [deleteAccount, setDeleteAccount] = useState<AccountWithPermissions | undefined>(undefined);
 
     console.log(session.accounts);
     return (
@@ -23,6 +25,8 @@ export const AccountsPage: React.FC = () => {
 
             <Card className="w-full py-2! p-2">
                 <CreateAccountDialog />
+                <EditAccountDialog account={editAccount} close={() => setEditAccount(undefined)} />
+                <DeleteAccountDialog account={deleteAccount} close={() => setDeleteAccount(undefined)} />
 
                 <Table>
                     <TableHeader>
