@@ -53,7 +53,7 @@ export class AccountService {
             }
         }
 
-        // Dynamisch Update-Objekt bauen
+        // Dynamically build update object
         const data: { name?: string; email?: string; password?: string; api?: string | null } = {};
         if (editAccountDto.name) data.name = editAccountDto.name;
         if (editAccountDto.email) data.email = editAccountDto.email;
