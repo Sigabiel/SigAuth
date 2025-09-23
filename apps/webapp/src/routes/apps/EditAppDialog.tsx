@@ -60,6 +60,7 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
                 root: app ? (app.permissions as AppPermission).root : [],
             },
         },
+        mode: 'onChange',
     });
 
     // wenn sich app ändert → reset
@@ -107,6 +108,7 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
                         <form
                             onSubmit={(e: React.FormEvent) => {
                                 e.preventDefault();
+                                if (!form.formState.isValid) return;
                                 toast.promise(form.handleSubmit(submitToApi), {
                                     loading: 'Editing app...',
                                     success: 'App edited successfully',
@@ -197,10 +199,10 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
 
                                             {((permissionField.length > 0 && permissionField.length < 3) ||
                                                 !/^[A-Z0-9 _-]*$/i.test(permissionField)) && (
-                                                    <p data-slot="form-message" className="text-destructive text-sm mt-2">
-                                                        Permission must be at least 3 characters long and alphanumeric.
-                                                    </p>
-                                                )}
+                                                <p data-slot="form-message" className="text-destructive text-sm mt-2">
+                                                    Permission must be at least 3 characters long and alphanumeric.
+                                                </p>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -226,7 +228,7 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
                                 </div>
                             </Tabs>
 
-                            <Button className="w-full" type="submit">
+                            <Button className="w-full" type="submit" disabled={!form.formState.isValid}>
                                 Submit
                             </Button>
                         </form>
