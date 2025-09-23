@@ -36,7 +36,7 @@ export class AccountService {
     }
 
     async editAccount(editAccountDto: EditAccountDto): Promise<AccountWithPermissions> {
-        // Prüfung auf eindeutige Werte (Name/Email)
+        // Check for unique values (Name/Email)
         if (editAccountDto.name || editAccountDto.email) {
             const orConditions: Prisma.AccountWhereInput[] = [];
             if (editAccountDto.name) orConditions.push({ name: editAccountDto.name });
