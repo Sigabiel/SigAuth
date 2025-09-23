@@ -49,7 +49,7 @@ export class AccountController {
     @Post('delete')
     @UseGuards(IsRoot) // TODO Change to proper permission
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiNotFoundResponse({ description: 'Not all asset types found or invalid ids provided' })
+    @ApiNotFoundResponse({ description: 'Not all accounts found or invalid ids provided' })
     async deleteAccount(@Body() deleteAccountDto: DeleteAccountDto): Promise<void> {
         await this.accountService.deleteAccount(deleteAccountDto);
     }
