@@ -20,14 +20,24 @@ export const EditAccountDialog = ({ account, close }: { account?: AccountWithPer
             .string()
             .regex(/^[a-zA-Z0-9_-]+$/, 'Only Letters, Digits, - and _ allowed, no spaces')
             .min(4, 'Name must be at least 4 characters long')
-            .refine(val => session.accounts.findIndex(a => a.name === val) === -1, { message: 'An account with this name already exists' }),
+            .refine(
+                val =>
+                    session.accounts.findIndex(
+                        a => a.name === val && a.id !== account?.id
+                    ) === -1,
+                { message: 'An account with this name already exists' }
+            ),
         password: z.string().optional(),
         email: z
             .string()
             .email('Invalid email address')
-            .refine(val => session.accounts.findIndex(a => a.email === val) === -1, {
-                message: 'An account with this email already exists',
-            }),
+            .refine(
+                val =>
+                    session.accounts.findIndex(
+                        a => a.email === val && a.id !== account?.id
+                    ) === -1,
+                { message: 'An account with this email already exists' }
+            ),
         apiAccess: z.boolean(),
     });
 
