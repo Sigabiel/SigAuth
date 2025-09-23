@@ -56,6 +56,7 @@ export const CreateAppDialog = () => {
                 root: [] as string[],
             },
         },
+        mode: 'onChange',
     });
 
     const permissions = form.watch(`permissions.${tab}`);
@@ -93,6 +94,7 @@ export const CreateAppDialog = () => {
                         <form
                             onSubmit={(e: React.FormEvent) => {
                                 e.preventDefault();
+                                if (!form.formState.isValid) return;
                                 toast.promise(form.handleSubmit(submitToApi), {
                                     loading: 'Creating app...',
                                     success: 'App created successfully',
@@ -212,7 +214,7 @@ export const CreateAppDialog = () => {
                                 </div>
                             </Tabs>
 
-                            <Button className="w-full" type="submit">
+                            <Button className="w-full" type="submit" disabled={!form.formState.isValid}>
                                 Submit
                             </Button>
                         </form>

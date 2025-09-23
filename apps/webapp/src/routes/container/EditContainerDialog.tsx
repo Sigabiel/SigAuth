@@ -56,6 +56,7 @@ export const EditContainerDialog = ({ container, close }: { container?: Containe
             assets: container?.assets || [],
             apps: container?.apps || [],
         },
+        mode: 'onChange',
     });
 
     useEffect(() => {
@@ -120,6 +121,7 @@ export const EditContainerDialog = ({ container, close }: { container?: Containe
                     <form
                         onSubmit={(e: React.FormEvent) => {
                             e.preventDefault();
+                            if (!form.formState.isValid) return;
                             toast.promise(form.handleSubmit(submitToApi), {
                                 loading: 'Submitting changes...',
                                 success: 'Container edited successfully',
@@ -343,7 +345,9 @@ export const EditContainerDialog = ({ container, close }: { container?: Containe
                         </div>
 
                         <DialogFooter>
-                            <Button type="submit">Edit Container</Button>
+                            <Button type="submit" disabled={!form.formState.isValid}>
+                                Edit Container
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

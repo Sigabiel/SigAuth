@@ -53,6 +53,7 @@ export const CreateContainerDialog = () => {
             assets: [],
             apps: [],
         },
+        mode: 'onChange',
     });
 
     const isAssetIdFieldValid = useMemo(() => /^\d*(?:[,-]\d+)*$/.test(assetIdField), [assetIdField]);
@@ -111,6 +112,7 @@ export const CreateContainerDialog = () => {
                     <form
                         onSubmit={(e: React.FormEvent) => {
                             e.preventDefault();
+                            if (!form.formState.isValid) return;
                             toast.promise(form.handleSubmit(submitToApi), {
                                 loading: 'Creating container...',
                                 success: 'Container created successfully',
@@ -334,7 +336,9 @@ export const CreateContainerDialog = () => {
                         </div>
 
                         <DialogFooter>
-                            <Button type="submit">Create Container</Button>
+                            <Button type="submit" disabled={!form.formState.isValid}>
+                                Create Container
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>
