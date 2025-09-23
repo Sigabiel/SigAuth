@@ -1,5 +1,5 @@
-import { IsEmail, IsString, IsStrongPassword, Matches, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsEmail, IsString, IsStrongPassword, Matches, MinLength } from 'class-validator';
 
 export class CreateAccountDto {
     @IsString()
@@ -18,4 +18,12 @@ export class CreateAccountDto {
     @IsEmail()
     @ApiProperty({ example: '<EMAIL>', type: 'string', description: 'Email must be valid' })
     email: string;
+
+    @IsBoolean()
+    @ApiProperty({
+        example: false,
+        type: 'boolean',
+        description: 'Whether the account should have API access via a token or not',
+    })
+    apiAccess: boolean;
 }

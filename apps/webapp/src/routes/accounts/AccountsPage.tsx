@@ -13,6 +13,7 @@ export const AccountsPage: React.FC = () => {
     const [editAccount, setEditAccount] = useState<Account | undefined>(undefined);
     const [deleteAccount, setDeleteAccount] = useState<Account | undefined>(undefined);
 
+    console.log(session.accounts);
     return (
         <>
             <h2 className="scroll-m-20 text-3xl font-semibold">Manage Accounts</h2>

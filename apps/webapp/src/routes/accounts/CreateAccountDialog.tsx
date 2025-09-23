@@ -12,32 +12,44 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-const formSchema = z.object({
-    name: z
-        .string()
-        .regex(/^[a-zA-Z0-9_-]+$/, 'Only Letters, Digits, - and _ allowed, no spaces')
-        .min(4, 'Name must be at least 4 characters long'),
-    password: z.string().min(8, 'Password must be at least 8 characters long'),
-    email: z.string().email('Invalid email address'),
-    apiAccess: z.boolean(),
-});
-
+// TODO add info for what a strong password is considered
 export const CreateAccountDialog = () => {
     const { session, setSession } = useSession();
+
+    const formSchema = z.object({
+        name: z
+            .string()
+            .regex(/^[a-zA-Z0-9_-]+$/, 'Only Letters, Digits, - and _ allowed, no spaces')
+            .min(4, 'Name must be at least 4 characters long')
+            .refine(val => session.accounts.findIndex(a => a.name === val) === -1, { message: 'An account with this name already exists' }),
+        password: z
+            .string()
+            .min(8, 'Password must be at least 8 characters long')
+            .regex(
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,
+                'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+            ),
+        email: z
+            .string()
+            .email('Invalid email address')
+            .refine(val => session.accounts.findIndex(a => a.email === val) === -1, {
+                message: 'An account with this email already exists',
+            }),
+        apiAccess: z.boolean(),
+    });
 
     const [open, setOpen] = useState(false);
 
     const submitToApi = async (values: z.infer<typeof formSchema>) => {
         const res = await request('POST', '/api/account/create', values);
-        console.log('Run');
 
         if (res.ok) {
             const data = await res.json();
-            setSession({ apps: [...session.apps, data] });
+            setSession({ accounts: [...session.accounts, data.account] });
             setOpen(false);
             return;
         }
-        throw new Error((await res.json()).message || 'Failed to create app');
+        throw new Error((await res.json()).message || 'Failed to create account');
     };
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -104,6 +116,15 @@ export const CreateAccountDialog = () => {
                                         <FormControl>
                                             <Input placeholder="Pick something safe" {...field} />
                                         </FormControl>
+                                        <FormDescription>
+                                            <ul className="list-disc pl-8">
+                                                <li>At least 8 characters long</li>
+                                                <li>Includes uppercase and lowercase letters</li>
+                                                <li>Includes numbers</li>
+                                                <li>Includes special characters</li>
+                                                <li>Does not contain your username or parts of your full name</li>
+                                            </ul>
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
