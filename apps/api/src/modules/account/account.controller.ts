@@ -2,16 +2,11 @@ import { AccountService } from '@/modules/account/account.service';
 import { CreateAccountDto } from '@/modules/account/dto/create-account.dto';
 import { DeleteAccountDto } from '@/modules/account/dto/delete-account.dto';
 import { EditAccountDto } from '@/modules/account/dto/edit-account.dto';
+import { PermissionSetDto } from '@/modules/account/dto/permission-set.dto';
 import { AuthGuard } from '@/modules/authentication/guards/authentication.guard';
 import { IsRoot } from '@/modules/authentication/guards/authentication.is-root.guard';
 import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
-import {
-    ApiBadRequestResponse,
-    ApiCreatedResponse,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Account } from '@sigauth/prisma-wrapper/prisma-client';
 
 @Controller('account')
@@ -52,5 +47,16 @@ export class AccountController {
     @ApiNotFoundResponse({ description: 'Not all accounts found or invalid ids provided' })
     async deleteAccount(@Body() deleteAccountDto: DeleteAccountDto): Promise<void> {
         await this.accountService.deleteAccount(deleteAccountDto);
+    }
+
+    @Post('permissions/set')
+    @UseGuards(IsRoot) // TODO Change to proper permissions
+    @ApiOkResponse({ description: 'Updated permissions successfully!' })
+    @ApiBadRequestResponse({ description: 'Invalid permissions data' })
+    @ApiNotFoundResponse({ description: 'Account not found' })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+    async setPermissions(@Body() permissionUpdateDto: PermissionSetDto) {
+        const perms = await this.accountService.setPermissions(permissionUpdateDto);
+        return { permissions: perms };
     }
 }

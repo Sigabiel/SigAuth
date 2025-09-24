@@ -3,9 +3,11 @@ import { Utils } from '@/common/utils';
 import { CreateAccountDto } from '@/modules/account/dto/create-account.dto';
 import { DeleteAccountDto } from '@/modules/account/dto/delete-account.dto';
 import { EditAccountDto } from '@/modules/account/dto/edit-account.dto';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { PermissionSetDto } from '@/modules/account/dto/permission-set.dto';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { AppPermission } from '@sigauth/prisma-wrapper/json-types';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
-import { Account, Prisma } from '@sigauth/prisma-wrapper/prisma-client';
+import { Account, PermissionInstance, Prisma, PrismaClient } from '@sigauth/prisma-wrapper/prisma-client';
 import bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -78,5 +80,84 @@ export class AccountService {
         await this.prisma.account.deleteMany({
             where: { id: { in: deleteAccountDto.accountIds } },
         });
+    }
+
+    async setPermissions(permissionSetDto: PermissionSetDto) {
+        const account = await this.prisma.account.findUnique({
+            where: { id: permissionSetDto.accountId },
+        });
+
+        if (!account) throw new NotFoundException('Account not found');
+        const maintained: PermissionInstance[] = [];
+
+        for (const perm of permissionSetDto.permissions) {
+            const app = await this.prisma.app.findUnique({
+                where: { id: perm.appId },
+            });
+            if (!app) throw new NotFoundException(`App with ID ${perm.appId} not found`);
+
+            async function checkAppContainerRelatation(prisma: PrismaClient) {
+                const container = await prisma.container.findFirst({ where: { id: perm.containerId } });
+                if (!container) throw new NotFoundException(`Container with ID ${perm.containerId} not found`);
+                if (!container.apps.includes(app?.id ?? -1))
+                    throw new BadRequestException(`Container with ID ${perm.containerId} is not related to App ${app?.name}`);
+            }
+
+            let found = false;
+            const permissions = app.permissions as AppPermission;
+            if (permissions.asset.includes(perm.identifier)) {
+                found = true;
+                if (!perm.assetId || !perm.containerId) {
+                    throw new BadRequestException(`Asset ID and Container ID must be provided for asset permissions`);
+                }
+                await checkAppContainerRelatation(this.prisma);
+            } else if (permissions.container.includes(perm.identifier)) {
+                found = true;
+                if (!perm.containerId || perm.assetId) {
+                    throw new BadRequestException(`Container ID without an asset ID must be provided for container permissions`);
+                }
+                await checkAppContainerRelatation(this.prisma);
+            } else if (permissions.root.includes(perm.identifier)) {
+                found = true;
+                if (perm.containerId || perm.assetId) {
+                    throw new BadRequestException(`No Container ID or Asset ID must be provided for root permissions`);
+                }
+            }
+            if (!found) throw new BadRequestException(`Permission ${perm.identifier} not found in app ${app.name}`);
+
+            const queryObject = {
+                accountId: permissionSetDto.accountId,
+                appId: perm.appId,
+                identifier: perm.identifier,
+                containerId: perm.containerId ?? null,
+                assetId: perm.assetId ?? null,
+            };
+            const existing = await this.prisma.permissionInstance.findFirst({
+                where: queryObject,
+            });
+
+            if (!existing) {
+                try {
+                    const createdPerm = await this.prisma.permissionInstance.create({
+                        data: queryObject,
+                    });
+                    maintained.push(createdPerm);
+                } catch (_) {
+                    throw new BadRequestException("Error creating permissions some foreign keys don't exist");
+                }
+            } else {
+                maintained.push(existing);
+            }
+        }
+
+        // remove all permissions that are not in the new set
+        await this.prisma.permissionInstance.deleteMany({
+            where: {
+                id: { notIn: maintained.map(p => p.id) },
+                accountId: permissionSetDto.accountId,
+            },
+        });
+
+        return maintained;
     }
 }
