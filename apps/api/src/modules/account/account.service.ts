@@ -96,7 +96,7 @@ export class AccountService {
             });
             if (!app) throw new NotFoundException(`App with ID ${perm.appId} not found`);
 
-            async function checkAppContainerRelatation(prisma: PrismaClient) {
+            async function checkAppContainerRelation(prisma: PrismaClient) {
                 const container = await prisma.container.findFirst({ where: { id: perm.containerId } });
                 if (!container) throw new NotFoundException(`Container with ID ${perm.containerId} not found`);
                 if (!container.apps.includes(app?.id ?? -1))
@@ -110,13 +110,13 @@ export class AccountService {
                 if (!perm.assetId || !perm.containerId) {
                     throw new BadRequestException(`Asset ID and Container ID must be provided for asset permissions`);
                 }
-                await checkAppContainerRelatation(this.prisma);
+                await checkAppContainerRelation(this.prisma);
             } else if (permissions.container.includes(perm.identifier)) {
                 found = true;
                 if (!perm.containerId || perm.assetId) {
                     throw new BadRequestException(`Container ID without an asset ID must be provided for container permissions`);
                 }
-                await checkAppContainerRelatation(this.prisma);
+                await checkAppContainerRelation(this.prisma);
             } else if (permissions.root.includes(perm.identifier)) {
                 found = true;
                 if (perm.containerId || perm.assetId) {
