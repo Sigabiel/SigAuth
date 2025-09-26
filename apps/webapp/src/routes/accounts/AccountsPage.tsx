@@ -5,8 +5,9 @@ import { useSession } from '@/context/SessionContext';
 import { CreateAccountDialog } from '@/routes/accounts/CreateAccountDialog';
 import { DeleteAccountDialog } from '@/routes/accounts/DeleteAccountDialog';
 import { EditAccountDialog } from '@/routes/accounts/EditAccountDialog';
+import { PermissionSetAccountDialog } from '@/routes/accounts/PermissionSetAccountDialog';
 import type { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
-import { Edit, Trash } from 'lucide-react';
+import { Axe, Edit, Trash } from 'lucide-react';
 import { useState } from 'react';
 
 export const AccountsPage: React.FC = () => {
@@ -14,8 +15,8 @@ export const AccountsPage: React.FC = () => {
 
     const [editAccount, setEditAccount] = useState<AccountWithPermissions | undefined>(undefined);
     const [deleteAccount, setDeleteAccount] = useState<AccountWithPermissions | undefined>(undefined);
+    const [setPermissionAccount, updateSetPermissionAccount] = useState<AccountWithPermissions | undefined>(undefined);
 
-    
     return (
         <>
             <h2 className="scroll-m-20 text-3xl font-semibold">Manage Accounts</h2>
@@ -27,6 +28,7 @@ export const AccountsPage: React.FC = () => {
                 <CreateAccountDialog />
                 <EditAccountDialog account={editAccount} close={() => setEditAccount(undefined)} />
                 <DeleteAccountDialog account={deleteAccount} close={() => setDeleteAccount(undefined)} />
+                <PermissionSetAccountDialog account={setPermissionAccount} close={() => updateSetPermissionAccount(undefined)} />
 
                 <Table>
                     <TableHeader>
@@ -48,6 +50,9 @@ export const AccountsPage: React.FC = () => {
                                 <TableCell className="text-right flex justify-end gap-2">
                                     <Button variant="outline" size="icon" onClick={() => setEditAccount(account)}>
                                         <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="outline" size="icon" onClick={() => updateSetPermissionAccount(account)}>
+                                        <Axe className="h-4 w-4" />
                                     </Button>
                                     <Button variant="outline" size="icon" onClick={() => setDeleteAccount(account)}>
                                         <Trash className="h-4 w-4" />
