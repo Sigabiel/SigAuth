@@ -143,7 +143,7 @@ export class AccountService {
                     });
                     maintained.push(createdPerm);
                 } catch (_) {
-                    throw new BadRequestException("Error creating permissions some foreign keys don't exist");
+                    throw new BadRequestException("Error creating permission: some foreign keys do not exist");
                 }
             } else {
                 maintained.push(existing);
