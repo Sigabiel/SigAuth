@@ -178,7 +178,7 @@ export const PermissionSetAccountDialog = ({ account, close }: { account?: Accou
                         </div>
                     )}
 
-                    {/* Container & Assete Permission Selection */}
+                    {/* Container & Asset Permission Selection */}
                     {currentApp && currentContainer && (
                         <>
                             <div className="flex flex-col gap-2 mt-4">
