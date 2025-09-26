@@ -99,8 +99,8 @@ export class AccountService {
             async function checkAppContainerRelation(prisma: PrismaClient) {
                 const container = await prisma.container.findFirst({ where: { id: perm.containerId } });
                 if (!container) throw new NotFoundException(`Container with ID ${perm.containerId} not found`);
-                if (!container.apps.includes(app?.id ?? -1))
-                    throw new BadRequestException(`Container with ID ${perm.containerId} is not related to App ${app?.name}`);
+                if (!container.apps.includes(app!.id ?? -1))
+                    throw new BadRequestException(`Container with ID ${perm.containerId} is not related to App ${app!.name}`);
             }
 
             let found = false;
