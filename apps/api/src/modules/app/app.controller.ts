@@ -48,6 +48,7 @@ export class AppsController {
         description: 'Fetched permissions have invalid format (e.g. root is not an array of strings, etc.',
     })
     @ApiForbiddenResponse({ description: 'Forbidden' })
+    @ApiUnprocessableEntityResponse({ description: 'Duplicate permissions in different categories' })
     async createApp(@Body() createAppDto: CreateAppDto): Promise<App> {
         return await this.appsService.createApp(createAppDto);
     }
@@ -77,7 +78,8 @@ export class AppsController {
     })
     @ApiRequestTimeoutResponse({ description: 'Request to fetch apps permissions timed out' })
     @ApiUnprocessableEntityResponse({
-        description: 'Fetched permissions have invalid format (e.g. root is not an array of strings, etc.',
+        description:
+            'Fetched permissions have invalid format (e.g. root is not an array of strings, etc. or duplicate permissions in different categories',
     })
     @ApiForbiddenResponse({ description: 'Forbidden' })
     @ApiNotFoundResponse({ description: 'App not found' })

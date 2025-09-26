@@ -3,14 +3,7 @@ import { Utils } from '@/common/utils';
 import { CreateAppDto } from '@/modules/app/dto/create-app.dto';
 import { EditAppDto } from '@/modules/app/dto/edit-app.dto';
 import { HttpService } from '@nestjs/axios';
-import {
-    BadRequestException,
-    Injectable,
-    Logger,
-    NotFoundException,
-    RequestTimeoutException,
-    UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, RequestTimeoutException, UnprocessableEntityException } from '@nestjs/common';
 import { AppPermission, AppWebFetch } from '@sigauth/prisma-wrapper/json-types';
 import { App } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
@@ -36,8 +29,12 @@ export class AppsService {
         } while (await this.prisma.app.findUnique({ where: { token: appToken } }));
 
         if (createAppDto.webFetchEnabled)
-            createAppDto.permissions =
-                (await this.fetchPermissionsFromURL(createAppDto.url)) ?? createAppDto.permissions;
+            createAppDto.permissions = (await this.fetchPermissionsFromURL(createAppDto.url)) ?? createAppDto.permissions;
+
+        // look for duplicate identifiers in permissions
+        const allPerms = Object.values(createAppDto.permissions).flat();
+        const uniquePerms = Array.from(new Set(allPerms));
+        if (allPerms.length !== uniquePerms.length) throw new UnprocessableEntityException('Duplicate permissions in different categories');
 
         const app = await this.prisma.app.create({
             data: {
@@ -61,16 +58,19 @@ export class AppsService {
     }
 
     async editApp(editAppDto: EditAppDto): Promise<App> {
-        if (editAppDto.id == PROTECTED.App.id)
-            throw new BadRequestException('You can not edit the SigAuth app, please create a new one');
+        if (editAppDto.id == PROTECTED.App.id) throw new BadRequestException('You can not edit the SigAuth app, please create a new one');
 
         const app = await this.prisma.app.findUnique({ where: { id: editAppDto.id } });
         if (!app) throw new NotFoundException("App doesn't exist");
 
         if (editAppDto.nudge) await this.sendAppNudge(app.url);
-        const newPerms = editAppDto.webFetchEnabled
-            ? await this.fetchPermissionsFromURL(app.url)
-            : (editAppDto.permissions as AppPermission);
+
+        // look for duplicate identifiers in permissions
+        const allPerms = Object.values(editAppDto.permissions).flat();
+        const uniquePerms = Array.from(new Set(allPerms));
+        if (allPerms.length !== uniquePerms.length) throw new UnprocessableEntityException('Duplicate permissions in different categories');
+
+        const newPerms = editAppDto.webFetchEnabled ? await this.fetchPermissionsFromURL(app.url) : (editAppDto.permissions as AppPermission);
         if (!newPerms) throw new UnprocessableEntityException('Fetched permissions have invalid format');
 
         // handle permission removal
