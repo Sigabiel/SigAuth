@@ -50,22 +50,25 @@ const RootComponent: React.FC = () => {
                         </main>
                     ) : (
                         <SessionContextProvider init={session}>
-                            {session?.account && init ? (
-                                <Layout>
-                                    <Routes>
-                                        <Route path="/" element={<HomePage />} />
-                                        <Route path="/accounts" element={<AccountsPage />} />
-                                        <Route path="/asset/types" element={<AssetTypePage />} />
-                                        <Route path="/asset/instances" element={<AssetPage />} />
-                                        <Route path="/container" element={<ContainerPage />} />
-                                        <Route path="/settings" element={<SettingsPage />} />
-                                        <Route path="/apps" element={<AppsPage />} />
-                                        <Route path="*" element={<h1>404 Not Found</h1>} />
-                                    </Routes>
-                                </Layout>
-                            ) : (
-                                <SignInPage />
-                            )}
+                            <Routes>
+                                <Route path="/oidc/auth" element={<p> Test </p>} />
+                                {session?.account && init ? (
+                                    <>
+                                        <Route element={<Layout />}>
+                                            <Route path="/" element={<HomePage />} />
+                                            <Route path="/accounts" element={<AccountsPage />} />
+                                            <Route path="/asset/types" element={<AssetTypePage />} />
+                                            <Route path="/asset/instances" element={<AssetPage />} />
+                                            <Route path="/container" element={<ContainerPage />} />
+                                            <Route path="/settings" element={<SettingsPage />} />
+                                            <Route path="/apps" element={<AppsPage />} />
+                                            <Route path="*" element={<h1>404 Not Found</h1>} />
+                                        </Route>
+                                    </>
+                                ) : (
+                                    <Route path="*" element={<SignInPage />} />
+                                )}
+                            </Routes>
                         </SessionContextProvider>
                     )}
                 </ThemeProvider>

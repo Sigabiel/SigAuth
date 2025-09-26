@@ -91,11 +91,12 @@ model Container {
 
 model App {
   id          Int    @id @default(autoincrement())
-  name        String
-  url         String
-  token       String @unique
-  permissions Json
-  webFetch    Json
+  name               String
+  url                String
+  oidcAuthCodeUrl    String?
+  token              String @unique
+  permissions        Json
+  webFetch           Json
 
   PermissionInstance PermissionInstance[]
 }

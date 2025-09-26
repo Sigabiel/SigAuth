@@ -1,7 +1,7 @@
-import { IsBoolean, IsNumber, IsPositive, IsString, ValidateNested } from 'class-validator';
+import { PermissionsDto } from '@/modules/app/dto/create-app.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { PermissionsDto } from '@/modules/app/dto/create-app.dto';
+import { IsBoolean, IsNumber, IsOptional, IsPositive, IsString, IsUrl, ValidateNested } from 'class-validator';
 
 export class EditAppDto {
     @IsNumber()
@@ -16,6 +16,14 @@ export class EditAppDto {
     @IsString()
     @ApiProperty({ example: 'https://starlink.com', description: 'URL of the app', type: 'string' })
     url: string;
+
+    @IsOptional()
+    @IsUrl()
+    @ApiProperty({
+        example: 'https://starlink.com/oidc/auth',
+        description: 'OIDC Authorization Code URL of the app',
+    })
+    oidcAuthCodeUrl?: string;
 
     @ValidateNested()
     @Type(() => PermissionsDto)

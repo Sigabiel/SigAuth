@@ -19,6 +19,7 @@ import { z } from 'zod';
 const formSchema = z.object({
     name: z.string().min(4, 'Name must be at least 4 characters long'),
     url: z.string().url('Invalid URL'),
+    oidcAuthCodeUrl: z.string().url('Invalid OIDC Authorization Code URL').optional(),
     permissions: z.object({
         asset: z.array(z.string().min(3, 'Asset permission must be at least 3 characters long')),
         container: z.array(z.string().min(3, 'Container permission must be at least 3 characters long')),
@@ -52,6 +53,7 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
         defaultValues: {
             name: app?.name,
             url: app?.url,
+            oidcAuthCodeUrl: app?.oidcAuthCodeUrl || '',
             webFetchEnabled: app ? (app.webFetch as AppWebFetch).enabled : false,
             nudge: false,
             permissions: {
@@ -69,6 +71,7 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
             form.reset({
                 name: app.name,
                 url: app.url,
+                oidcAuthCodeUrl: app.oidcAuthCodeUrl || '',
                 webFetchEnabled: (app.webFetch as AppWebFetch).enabled,
                 nudge: false,
                 permissions: {
@@ -141,6 +144,23 @@ export const EditAppDialog = ({ app, close }: { app?: App; close: () => void }) 
                                         <FormDescription>The URL of your application.</FormDescription>
                                         <FormControl>
                                             <Input placeholder="https://example.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="oidcAuthCodeUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>OIDC Authorization Code URL</FormLabel>
+                                        <FormDescription>
+                                            The URL of your application's OIDC authorization code endpoint. (optional)
+                                        </FormDescription>
+                                        <FormControl>
+                                            <Input placeholder="https://example.com/oidc/auth" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

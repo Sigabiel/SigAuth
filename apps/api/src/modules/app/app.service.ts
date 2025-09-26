@@ -41,6 +41,7 @@ export class AppsService {
                 name: createAppDto.name,
                 url: createAppDto.url,
                 token: appToken,
+                oidcAuthCodeUrl: createAppDto.oidcAuthCodeUrl,
                 webFetch: {
                     enabled: createAppDto.webFetchEnabled,
                     lastFetch: 0,
@@ -80,6 +81,7 @@ export class AppsService {
             data: {
                 name: editAppDto.name,
                 url: editAppDto.url,
+                oidcAuthCodeUrl: (editAppDto.oidcAuthCodeUrl || '').length > 0 ? editAppDto.oidcAuthCodeUrl : null,
                 webFetch: {
                     enabled: editAppDto.webFetchEnabled,
                     lastFetch: editAppDto.webFetchEnabled ? dayjs().unix() : (app.webFetch as AppWebFetch).lastFetch,

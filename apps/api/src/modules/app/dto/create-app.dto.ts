@@ -1,6 +1,6 @@
-import { IsArray, IsBoolean, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
 
 export class PermissionsDto {
     @IsArray()
@@ -24,9 +24,17 @@ export class CreateAppDto {
     @ApiProperty({ example: 'Starlink Monitoring', description: 'Name of the app', type: 'string' })
     name: string;
 
-    @IsString()
+    @IsUrl()
     @ApiProperty({ example: 'https://starlink.com', description: 'URL of the app', type: 'string' })
     url: string;
+
+    @IsOptional()
+    @IsUrl()
+    @ApiProperty({
+        example: 'https://starlink.com/oidc/auth',
+        description: 'OIDC Authorization Code URL of the app',
+    })
+    oidcAuthCodeUrl?: string;
 
     @ValidateNested()
     @Type(() => PermissionsDto)
