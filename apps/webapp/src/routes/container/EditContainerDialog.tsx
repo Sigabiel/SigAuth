@@ -125,7 +125,7 @@ export const EditContainerDialog = ({ container, close }: { container?: Containe
                             toast.promise(form.handleSubmit(submitToApi), {
                                 loading: 'Submitting changes...',
                                 success: 'Container edited successfully',
-                                error: (err: any) => err?.message || 'Failed to edit container',
+                                error: (err: Error) => err?.message || 'Failed to edit container',
                             });
                         }}
                         className="space-y-8"

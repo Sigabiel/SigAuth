@@ -1,6 +1,6 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Utils } from '@/common/utils';
-import { LoginRequestDto } from '@/modules/authentication/dto/login-request.dto';
+import { LoginRequestDto } from '@/modules/auth/dto/login-request.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Account, App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client';
@@ -10,13 +10,11 @@ import dayjs from 'dayjs';
 import * as process from 'node:process';
 import * as speakeasy from 'speakeasy';
 
-// TODO please check again which data is exposed to which user and how can we optimize the queries
-
 @Injectable()
-export class AuthenticationService {
+export class AuthService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async authenticate(loginRequestDto: LoginRequestDto) {
+    async login(loginRequestDto: LoginRequestDto) {
         const account = await this.prisma.account.findUnique({ where: { name: loginRequestDto.username } });
         if (!account || !bycrypt.compareSync(loginRequestDto.password, account.password)) {
             throw new UnauthorizedException('Invalid credentials');
@@ -77,11 +75,7 @@ export class AuthenticationService {
         const session = await this.prisma.session.findUnique({ where: { sessionId } });
         if (!account || !session) throw new UnauthorizedException('Not authenticated');
 
-        if (
-            account.permissions.some(
-                p => p.identifier == Utils.convertPermissionNameToIdent(SigAuthRootPermissions.ROOT),
-            )
-        ) {
+        if (account.permissions.some(p => p.identifier == Utils.convertPermissionNameToIdent(SigAuthRootPermissions.ROOT))) {
             const [accounts, assets, assetTypes, apps, containers] = await Promise.all([
                 this.prisma.account.findMany({ include: { permissions: true } }),
                 this.prisma.asset.findMany(),

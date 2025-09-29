@@ -15,9 +15,7 @@ export class IsRoot implements CanActivate {
 
         const account: AccountWithPermissions = request.account as AccountWithPermissions;
         return !!account.permissions.find(
-            p =>
-                p.appId == PROTECTED.App.id &&
-                p.identifier == Utils.convertPermissionNameToIdent(SigAuthRootPermissions.ROOT),
+            p => p.appId == PROTECTED.App.id && p.identifier == Utils.convertPermissionNameToIdent(SigAuthRootPermissions.ROOT),
         );
     }
 }

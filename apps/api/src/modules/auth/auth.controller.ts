@@ -1,16 +1,22 @@
-import { AuthenticationService } from '@/modules/authentication/authentication.service';
-import { LoginRequestDto } from '@/modules/authentication/dto/login-request.dto';
-import { AuthGuard } from '@/modules/authentication/guards/authentication.guard';
+import { AuthService } from '@/modules/auth/auth.service';
+import { LoginRequestDto } from '@/modules/auth/dto/login-request.dto';
+import { OIDCAuthenticateDto } from '@/modules/auth/dto/oidc-authenticate.dto';
+import { AuthGuard } from '@/modules/auth/guards/authentication.guard';
 import { Controller, Get, HttpCode, HttpStatus, Query, Req, Res, UseGuards } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiOkResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Request, Response } from 'express';
 import * as process from 'node:process';
 
-@Controller('authentication')
-@ApiUnauthorizedResponse({ description: 'Invalid credentials' })
-export class AuthenticationController {
-    constructor(private readonly authenticationService: AuthenticationService) {}
+@Controller('auth')
+@UseGuards(AuthGuard)
+export class AuthController {
+    constructor(private readonly authService: AuthService) {}
+
+    @Get('oidc/authenticate')
+    authenticateOIDC(@Query() oidcAuthDto: OIDCAuthenticateDto) {
+        return null;
+    }
 
     /**
      * this route should only be called from the SigAuth frontend.
@@ -23,7 +29,7 @@ export class AuthenticationController {
     @ApiAcceptedResponse({ description: 'Session created and cookie set. No content.' })
     async login(@Query() loginRequestDto: LoginRequestDto, @Res() res: Response) {
         // TODO allow authentcation via other methods as well (e.g. OAuth, SAML, Mail)
-        const sessionId = await this.authenticationService.authenticate(loginRequestDto);
+        const sessionId = await this.authService.login(loginRequestDto);
         res.cookie('sid', sessionId, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -41,7 +47,7 @@ export class AuthenticationController {
     @ApiOkResponse({ description: 'Session deleted and cookie cleared. No content.' })
     async logout(@Req() req: Request, @Res() res: Response) {
         const sid = (req.cookies as Record<string, string>)?.['sid'];
-        await this.authenticationService.logout(req.account as AccountWithPermissions, sid);
+        await this.authService.logout(req.account as AccountWithPermissions, sid);
         res.clearCookie('sid');
         res.sendStatus(200);
     }
@@ -61,9 +67,6 @@ export class AuthenticationController {
         },
     })
     async init(@Req() req: Request) {
-        return await this.authenticationService.getInitData(
-            req.cookies['sid'] as string,
-            req.account as AccountWithPermissions,
-        );
+        return await this.authService.getInitData(req.cookies['sid'] as string, req.account as AccountWithPermissions);
     }
 }

@@ -3,15 +3,16 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSession } from '@/context/SessionContext';
-import { useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router';
+import { request } from '@/lib/utils';
+import { useSearchParams } from 'react-router';
+import { toast } from 'sonner';
 
 export const OIDCSignInPage = () => {
     const { session } = useSession();
     const [searchParams] = useSearchParams();
 
     const appId = searchParams.get('appId');
-    const challenge = searchParams.get('challenge');
+    // TODO const challenge = searchParams.get('challenge');
 
     console.log(appId);
 
@@ -19,7 +20,23 @@ export const OIDCSignInPage = () => {
         // user authenticated generate authorization code
     }
 
-    const handleSubmit = () => {};
+    const handleSubmit = async () => {
+        const username = (document.getElementById('username') as HTMLInputElement).value.trim();
+        const password = (document.getElementById('password') as HTMLInputElement).value.trim();
+
+        // TODO add 2FA
+        if (username.length < 3 || password.length < 3) return toast.warning('Please enter longer credentials.');
+        const res = await request('GET', `/api/auth/login?username=${username}&password=${password}`);
+
+        if (res.ok) {
+            toast.success('Login successful!');
+            window.location.reload();
+        } else if (res.status === 429) {
+            toast.error('Too many requests. Please wait a moment and try again.');
+        } else {
+            toast.error('Login failed. Please check your credentials.');
+        }
+    };
 
     return (
         <main className="flex items-center justify-center min-h-screen bg-muted">

@@ -291,7 +291,7 @@ export const PermissionSetAccountDialog = ({ account, close }: { account?: Accou
                                                                     <TableCell key={identifier} className="text-center">
                                                                         <Switch
                                                                             checked={!!perm}
-                                                                            onCheckedChange={checked => {
+                                                                            onCheckedChange={() => {
                                                                                 if (perm) {
                                                                                     setPermissions(permissions.filter(p => p !== perm));
                                                                                 } else {

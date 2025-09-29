@@ -1,17 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AssetTypeField } from '@sigauth/prisma-wrapper/json-types';
 import { Type } from 'class-transformer';
-import {
-    IsArray,
-    IsBoolean,
-    IsNumber,
-    IsOptional,
-    IsString,
-    Max,
-    Min,
-    MinLength,
-    ValidateNested,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, Max, Min, MinLength, ValidateNested } from 'class-validator';
 
 export class CreateAssetTypeDto {
     @ApiProperty({ example: 'Blog Post', type: 'string' })
