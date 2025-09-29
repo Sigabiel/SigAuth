@@ -9,13 +9,12 @@ import { Request, Response } from 'express';
 import * as process from 'node:process';
 
 @Controller('auth')
-@UseGuards(AuthGuard)
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Get('oidc/authenticate')
     authenticateOIDC(@Query() oidcAuthDto: OIDCAuthenticateDto) {
-        return null;
+        return this.authService.;
     }
 
     /**

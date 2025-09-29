@@ -1,7 +1,7 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Utils } from '@/common/utils';
 import { LoginRequestDto } from '@/modules/auth/dto/login-request.dto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Account, App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client';
 import { SigAuthRootPermissions } from '@sigauth/prisma-wrapper/protected';
@@ -9,6 +9,7 @@ import * as bycrypt from 'bcryptjs';
 import dayjs from 'dayjs';
 import * as process from 'node:process';
 import * as speakeasy from 'speakeasy';
+import { OIDCAuthenticateDto } from './dto/oidc-authenticate.dto';
 
 @Injectable()
 export class AuthService {
@@ -112,5 +113,13 @@ export class AuthService {
             console.log(apps, accounts, containers, assets, assetTypes);
             return { account, session, accounts: [], assets: [], assetTypes: [], apps: [], containers: [] }; // TODO test if this works
         }
+    }
+
+    async authenticateOIDC(data: OIDCAuthenticateDto, sessionId: string) {
+        const session = await this.prisma.session.findFirst({ where: { sessionId }, include: { account: true } });
+        if (!session) throw new NotFoundException("Couldn't resolve session");
+
+        const authorizationCode = Utils.generateToken(64);
+        // todo add to session obj in db
     }
 }

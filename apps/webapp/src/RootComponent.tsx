@@ -24,7 +24,7 @@ const RootComponent: React.FC = () => {
 
     useEffect(() => {
         if (!session?.account && window.location.pathname !== '/signin') {
-            request('GET', '/api/authentication/init').then(async res => {
+            request('GET', '/api/auth/init').then(async res => {
                 if (res.ok) {
                     const data = await res.json();
                     setSession(data as SessionStorage);

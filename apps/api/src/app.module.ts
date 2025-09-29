@@ -9,7 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
-import { AuthModule } from './modules/auth/auth.module';
+import { AuthModule } from '@/modules/auth/auth.module';
 
 @Module({
     imports: [
