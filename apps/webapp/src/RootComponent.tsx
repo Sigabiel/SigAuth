@@ -16,6 +16,7 @@ import dayjs from 'dayjs';
 import React, { StrictMode, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router';
 import { toast, Toaster } from 'sonner';
+import { OIDCSignInPage } from './routes/auth/oidc/OIDCSignInPage';
 
 const RootComponent: React.FC = () => {
     const [session, setSession] = useState<SessionStorage | null>(null);
@@ -51,7 +52,7 @@ const RootComponent: React.FC = () => {
                     ) : (
                         <SessionContextProvider init={session}>
                             <Routes>
-                                <Route path="/oidc/auth" element={<p> Test </p>} />
+                                <Route path="/auth/oidc" element={<OIDCSignInPage />} />
                                 {session?.account && init ? (
                                     <>
                                         <Route element={<Layout />}>
