@@ -18,8 +18,8 @@ import { OIDCAuthenticateDto } from './dto/oidc-authenticate.dto';
 export class AuthService {
     private readonly logger = new Logger(PrismaService.name);
 
-    private publicKey: string = '';
-    private privateKey: string = '';
+    public publicKey: string = '';
+    public privateKey: string = '';
 
     // load or generate RSA keys
     async onModuleInit() {

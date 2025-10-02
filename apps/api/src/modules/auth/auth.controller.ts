@@ -3,7 +3,7 @@ import { LoginRequestDto } from '@/modules/auth/dto/login-request.dto';
 import { OIDCAuthenticateDto } from '@/modules/auth/dto/oidc-authenticate.dto';
 import { AuthGuard } from '@/modules/auth/guards/authentication.guard';
 import { Controller, Get, HttpCode, HttpStatus, Query, Req, Res, UseGuards } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiNotFoundResponse, ApiOkResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { type Request, type Response } from 'express';
 import * as process from 'node:process';
@@ -22,7 +22,12 @@ export class AuthController {
 
     @Get('oidc/exchange')
     @HttpCode(HttpStatus.OK)
-    async exhangeOIDC(@Query('code') code: string, @Query('app-token') appToken: string) {
+    @ApiUnauthorizedResponse({ description: 'Invalid code or app token.' })
+    @ApiOkResponse({
+        description: 'Access and refresh tokens issued successfully.',
+        example: { accessToken: 'eyDSawjdgaszdgwagdsukgduigvsagdaisghdwagdsiuzdhi', refreshToken: 't5468gfd486wef486fsd846v864' },
+    })
+    async exchangeOIDC(@Query('code') code: string, @Query('app-token') appToken: string) {
         return await this.authService.exchangeOIDCToken(code, appToken);
     }
 

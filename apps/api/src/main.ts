@@ -1,5 +1,5 @@
 import { UnauthorizedExceptionFilter } from '@/common/filters/unauthorized-exception.filter';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
@@ -7,7 +7,9 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
-    app.setGlobalPrefix('api');
+    app.setGlobalPrefix('api', {
+        exclude: [{ path: '.well-known/*path', method: RequestMethod.GET }],
+    });
     app.useGlobalPipes(new ValidationPipe());
     app.useGlobalFilters(new UnauthorizedExceptionFilter());
     app.use(cookieParser());

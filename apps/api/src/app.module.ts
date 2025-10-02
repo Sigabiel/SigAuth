@@ -11,6 +11,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
+import { WellKnownModule } from './modules/well-known/well-known.module';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { join } from 'path';
         AppsModule,
         ContainerModule,
         AuthModule,
+        WellKnownModule,
     ],
     providers: [PrismaService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
