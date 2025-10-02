@@ -5,7 +5,7 @@ export class EditAccountDto {
     @IsNumber()
     @IsPositive()
     @ApiProperty({ example: 1, type: 'number', description: 'ID of the account to edit' })
-    id: number;
+    id!: number;
 
     @IsString()
     @MinLength(4)

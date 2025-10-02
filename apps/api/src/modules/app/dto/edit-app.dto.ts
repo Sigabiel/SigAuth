@@ -7,15 +7,15 @@ export class EditAppDto {
     @IsNumber()
     @IsPositive()
     @ApiProperty({ example: 1, type: 'number', description: 'Id of the app to edit' })
-    id: number;
+    id!: number;
 
     @IsString()
     @ApiProperty({ example: 'Starlink Monitoring', description: 'Name of the app', type: 'string' })
-    name: string;
+    name!: string;
 
     @IsString()
     @ApiProperty({ example: 'https://starlink.com', description: 'URL of the app', type: 'string' })
-    url: string;
+    url!: string;
 
     @IsOptional()
     @IsUrl()
@@ -35,7 +35,7 @@ export class EditAppDto {
             root: ['app1-administrator', 'app1-developer'],
         },
     })
-    permissions: PermissionsDto;
+    permissions!: PermissionsDto;
 
     @IsBoolean()
     @ApiProperty({
@@ -43,7 +43,7 @@ export class EditAppDto {
         type: 'boolean',
         description: 'Enable web fetch (periodically fetch permissions from the app)',
     })
-    webFetchEnabled: boolean;
+    webFetchEnabled!: boolean;
 
     @IsBoolean()
     @ApiProperty({
@@ -51,5 +51,5 @@ export class EditAppDto {
         type: 'boolean',
         description: 'Enable nudge (send push notification to the app)',
     })
-    nudge: boolean;
+    nudge!: boolean;
 }

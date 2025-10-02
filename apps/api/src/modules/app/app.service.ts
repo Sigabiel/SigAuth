@@ -3,7 +3,14 @@ import { Utils } from '@/common/utils';
 import { CreateAppDto } from '@/modules/app/dto/create-app.dto';
 import { EditAppDto } from '@/modules/app/dto/edit-app.dto';
 import { HttpService } from '@nestjs/axios';
-import { BadRequestException, Injectable, Logger, NotFoundException, RequestTimeoutException, UnprocessableEntityException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    Logger,
+    NotFoundException,
+    RequestTimeoutException,
+    UnprocessableEntityException,
+} from '@nestjs/common';
 import { AppPermission, AppWebFetch } from '@sigauth/prisma-wrapper/json-types';
 import { App } from '@sigauth/prisma-wrapper/prisma-client';
 import { PROTECTED } from '@sigauth/prisma-wrapper/protected';
@@ -71,7 +78,9 @@ export class AppsService {
         const uniquePerms = Array.from(new Set(allPerms));
         if (allPerms.length !== uniquePerms.length) throw new UnprocessableEntityException('Duplicate permissions in different categories');
 
-        const newPerms = editAppDto.webFetchEnabled ? await this.fetchPermissionsFromURL(app.url) : (editAppDto.permissions as AppPermission);
+        const newPerms = editAppDto.webFetchEnabled
+            ? await this.fetchPermissionsFromURL(app.url)
+            : (editAppDto.permissions as AppPermission);
         if (!newPerms) throw new UnprocessableEntityException('Fetched permissions have invalid format');
 
         // handle permission removal

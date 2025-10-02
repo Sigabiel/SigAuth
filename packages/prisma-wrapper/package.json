@@ -5,9 +5,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "dev": "tsc --watch",
-        "build": "tsc",
-        "lint": "echo SKIPPING LINT ON PRISMA-WRAPPER"
+        "build": "tsc"
     },
     "exports": {
         "./prisma": {
