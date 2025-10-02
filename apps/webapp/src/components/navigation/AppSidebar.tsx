@@ -1,7 +1,7 @@
 import { AppWindow, ChevronDown, Container, FlipHorizontal, Home, Layers, NotepadText, Settings, Stamp, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
     Sidebar,
     SidebarContent,
@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { logout } from '@/lib/utils';
-import { Collapsible } from '@radix-ui/react-collapsible';
 import { useNavigate } from 'react-router';
 
 export type SidebarItem = {
