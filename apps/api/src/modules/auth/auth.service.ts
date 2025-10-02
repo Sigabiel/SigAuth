@@ -1,18 +1,52 @@
 import { PrismaService } from '@/common/prisma/prisma.service';
 import { Utils } from '@/common/utils';
 import { LoginRequestDto } from '@/modules/auth/dto/login-request.dto';
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { Account, App, Asset, AssetType, Container, Session } from '@sigauth/prisma-wrapper/prisma-client';
 import { SigAuthRootPermissions } from '@sigauth/prisma-wrapper/protected';
 import * as bycrypt from 'bcryptjs';
 import dayjs from 'dayjs';
+import fs from 'fs';
+import { sign } from 'jsonwebtoken';
+import { generateKeyPairSync } from 'node:crypto';
 import * as process from 'node:process';
 import * as speakeasy from 'speakeasy';
 import { OIDCAuthenticateDto } from './dto/oidc-authenticate.dto';
 
 @Injectable()
 export class AuthService {
+    private readonly logger = new Logger(PrismaService.name);
+
+    private publicKey: string = '';
+    private privateKey: string = '';
+
+    // load or generate RSA keys
+    async onModuleInit() {
+        const privatePath = './keys/private.pem';
+        const publicPath = './keys/public.pub.pem';
+
+        if (!fs.existsSync(privatePath) || !fs.existsSync(publicPath)) {
+            this.logger.warn('No RSA keys found, generating new keys');
+            const pair = generateKeyPairSync('rsa', {
+                modulusLength: 4096,
+                publicExponent: 0x10001,
+                publicKeyEncoding: { type: 'spki', format: 'pem' },
+                privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+            });
+
+            fs.writeFileSync(privatePath, pair.privateKey);
+            fs.writeFileSync(publicPath, pair.publicKey);
+
+            this.publicKey = pair.publicKey;
+            this.privateKey = pair.privateKey;
+        } else {
+            this.logger.log('Using existing RSA keys');
+            this.publicKey = fs.readFileSync(publicPath, 'utf8');
+            this.privateKey = fs.readFileSync(privatePath, 'utf8');
+        }
+    }
+
     constructor(private readonly prisma: PrismaService) {}
 
     async login(loginRequestDto: LoginRequestDto) {
@@ -138,5 +172,66 @@ export class AuthService {
         });
 
         return `${app.oidcAuthCodeUrl}?code=${challenge.authorizationCode}&expires=${challenge.created.getTime() + 1000 * 60 * +(process.env.AUTHORIZATION_CHALLENGE_EXPIRATION_OFFSET ?? 5)}`;
+    }
+
+    async exchangeOIDCToken(code: string, appToken: string) {
+        const authChallenge = await this.prisma.authorizationChallenge.findUnique({
+            where: { authorizationCode: code },
+            include: { session: { include: { account: true } } },
+        });
+        if (!authChallenge) throw new NotFoundException("Couldn't resolve authorization challenge");
+
+        if (
+            dayjs(authChallenge.created)
+                .add(+(process.env.AUTHORIZATION_CHALLENGE_EXPIRATION_OFFSET ?? 5), 'minute')
+                .isBefore(dayjs())
+        ) {
+            await this.prisma.authorizationChallenge.delete({ where: { id: authChallenge.id } });
+            throw new UnauthorizedException('Authorization challenge expired');
+        }
+
+        if (dayjs.unix(authChallenge.session.expire).isBefore(dayjs())) {
+            await this.prisma.authorizationChallenge.delete({ where: { id: authChallenge.id } });
+            await this.prisma.session.delete({ where: { id: authChallenge.sessionId } });
+            throw new UnauthorizedException('Session expired');
+        }
+
+        const app = await this.prisma.app.findUnique({ where: { id: authChallenge.appId } });
+        if (!app || app.token !== appToken) throw new UnauthorizedException("Couldn't resolve app or invalid app token");
+
+        const accessToken = sign(
+            {
+                exp: dayjs().unix() + 60 * 60 * +(process.env.OIDC_ACCESS_TOKEN_EXPIRATION_OFFSET ?? 10),
+                sub: authChallenge.session.account.id,
+                iat: dayjs().unix(),
+                iss: process.env.FRONTEND_URL,
+
+                name: authChallenge.session.account.name,
+                email: authChallenge.session.account.email,
+                // TODO discuss to which permissions are added to the jwt because of size limitations
+            },
+            this.privateKey,
+            {
+                algorithm: 'RS256',
+                keyid: 'sigauth',
+                issuer: process.env.FRONTEND_URL,
+                audience: app.name,
+                expiresIn: +(process.env.OIDC_ACCESS_TOKEN_EXPIRATION_OFFSET ?? 10) * 60,
+            },
+        );
+
+        const instance = await this.prisma.authorizationInstance.create({
+            data: {
+                sessionId: authChallenge.sessionId,
+                refreshToken: Utils.generateToken(64),
+                refreshTokenExpire: dayjs().unix() + 60 * 60 * 24 * +(process.env.OIDC_REFRESH_TOKEN_EXPIRATION_OFFSET ?? 30),
+            },
+        });
+
+        await this.prisma.authorizationChallenge.delete({ where: { id: authChallenge.id } });
+        return {
+            accessToken,
+            refreshToken: instance.refreshToken,
+        };
     }
 }

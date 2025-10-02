@@ -20,6 +20,12 @@ export class AuthController {
         return await this.authService.authenticateOIDC(oidcAuthDto, req.cookies['sid'] as string);
     }
 
+    @Get('oidc/exchange')
+    @HttpCode(HttpStatus.OK)
+    async exhangeOIDC(@Query('code') code: string, @Query('app-token') appToken: string) {
+        return await this.authService.exchangeOIDCToken(code, appToken);
+    }
+
     /**
      * this route should only be called from the SigAuth frontend.
      *

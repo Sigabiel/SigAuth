@@ -41,15 +41,12 @@ model Session {
   instances  AuthorizationInstance[]
 }
 
-// currently active authorization tokens provided to third parties
+// currently active refresh tokens provided to third parties
 model AuthorizationInstance {
   id        Int    @id @default(autoincrement())
   sessionId String
 
-  accessToken  String @unique
   refreshToken String @unique
-
-  accessTokenExpire  Int
   refreshTokenExpire Int
 
   session Session @relation(fields: [sessionId], references: [id])
