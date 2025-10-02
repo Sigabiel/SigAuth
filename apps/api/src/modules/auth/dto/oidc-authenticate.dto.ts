@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsPositive } from 'class-validator';
+import { IsNumberString } from 'class-validator';
 
 export class OIDCAuthenticateDto {
-    @IsNumber()
-    @IsPositive()
+    @IsNumberString()
     @ApiProperty({ description: 'The ID of the OIDC app to authenticate with', example: 69 })
-    appId!: number;
+    appId!: string;
     // TODO challenge: string;
 }

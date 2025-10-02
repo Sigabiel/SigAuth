@@ -1,8 +1,9 @@
 import { AuthService } from '@/modules/auth/auth.service';
 import { LoginRequestDto } from '@/modules/auth/dto/login-request.dto';
+import { OIDCAuthenticateDto } from '@/modules/auth/dto/oidc-authenticate.dto';
 import { AuthGuard } from '@/modules/auth/guards/authentication.guard';
 import { Controller, Get, HttpCode, HttpStatus, Query, Req, Res, UseGuards } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
 import { AccountWithPermissions } from '@sigauth/prisma-wrapper/prisma';
 import { type Request, type Response } from 'express';
 import * as process from 'node:process';
@@ -11,10 +12,13 @@ import * as process from 'node:process';
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
-    // @Get('oidc/authenticate')
-    // authenticateOIDC(@Query() oidcAuthDto: OIDCAuthenticateDto) {
-    //     return this.authService.authenticateOIDC(oidcAuthDto);
-    // }
+    @Get('oidc/authenticate')
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({ description: 'Redirect to the app with the authorization code.' })
+    @ApiNotFoundResponse({ description: 'App or no session found.' })
+    async authenticateOIDC(@Query() oidcAuthDto: OIDCAuthenticateDto, @Req() req: Request) {
+        return await this.authService.authenticateOIDC(oidcAuthDto, req.cookies['sid'] as string);
+    }
 
     /**
      * this route should only be called from the SigAuth frontend.

@@ -14,10 +14,17 @@ export const OIDCSignInPage = () => {
     const appId = searchParams.get('appId');
     // TODO const challenge = searchParams.get('challenge');
 
-    console.log(appId);
+    if (!appId) toast.error('No appId provided');
 
-    if (session.account) {
-        // user authenticated generate authorization code
+    if (session.account && appId) {
+        request('GET', '/api/auth/oidc/authenticate?appId=' + appId).then(async res => {
+            if (res.ok) {
+                // window.location.href = await res.text();
+                console.log('TODO redirect to', await res.text());
+            } else {
+                toast.error('Failed to initiate OIDC flow. Please try again.');
+            }
+        });
     }
 
     const handleSubmit = async () => {

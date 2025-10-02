@@ -27,17 +27,46 @@ model Account {
   permissions PermissionInstance[]
 }
 
+// login session for the main idp
 model Session {
-  sessionId         String  @id @unique
-  refreshToken      String  @unique
-  authorizationCode String? @unique
+  id String @id @unique
 
-  subject   Int
-  expire    Int
-  created   Int     @default(-1)
-  challenge String?
+  subject Int
+  expire  Int
+  created Int
 
   account Account @relation(fields: [subject], references: [id])
+
+  challenges AuthorizationChallenge[]
+  instances  AuthorizationInstance[]
+}
+
+// currently active authorization tokens provided to third parties
+model AuthorizationInstance {
+  id        Int    @id @default(autoincrement())
+  sessionId String
+
+  accessToken  String @unique
+  refreshToken String @unique
+
+  accessTokenExpire  Int
+  refreshTokenExpire Int
+
+  session Session @relation(fields: [sessionId], references: [id])
+}
+
+// pending authorization codes
+model AuthorizationChallenge {
+  id        Int    @id @default(autoincrement())
+  sessionId String
+  appId     Int
+
+  authorizationCode String   @unique
+  challenge         String?  @unique
+  created           DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id])
+  app     App     @relation(fields: [appId], references: [id])
 }
 
 model PermissionInstance {
@@ -90,13 +119,14 @@ model Container {
 }
 
 model App {
-  id          Int    @id @default(autoincrement())
-  name               String
-  url                String
-  oidcAuthCodeUrl    String?
-  token              String @unique
-  permissions        Json
-  webFetch           Json
+  id              Int     @id @default(autoincrement())
+  name            String
+  url             String
+  oidcAuthCodeUrl String?
+  token           String  @unique
+  permissions     Json
+  webFetch        Json
 
-  PermissionInstance PermissionInstance[]
+  PermissionInstance     PermissionInstance[]
+  AuthorizationChallenge AuthorizationChallenge[]
 }

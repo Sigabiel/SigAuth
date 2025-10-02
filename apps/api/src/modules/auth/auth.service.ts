@@ -37,15 +37,13 @@ export class AuthService {
         }
 
         // create session and return token
-        const refreshToken = Utils.generateToken(64);
         const sessionId = Utils.generateToken(64);
 
         const created = dayjs().unix();
-        const expire = created + (60 * 60 * 24 + +(process.env.SESSION_EXPIRATION_OFFSET ?? 5));
+        const expire = created + 60 * 60 * 24 * +(process.env.SESSION_EXPIRATION_OFFSET ?? 5);
         await this.prisma.session.create({
             data: {
-                sessionId,
-                refreshToken,
+                id: sessionId,
 
                 created,
                 expire,
@@ -56,7 +54,7 @@ export class AuthService {
     }
 
     async logout(account: AccountWithPermissions, sessionId: string) {
-        const session = await this.prisma.session.delete({ where: { sessionId } });
+        const session = await this.prisma.session.delete({ where: { id: sessionId } });
         if (!session) throw new UnauthorizedException('Invalid session');
         // TODO handle automatically remove expired session from db after a certain time
     }
@@ -73,8 +71,16 @@ export class AuthService {
         apps: App[];
         containers: Container[];
     }> {
-        const session = await this.prisma.session.findUnique({ where: { sessionId } });
+        const session = await this.prisma.session.findUnique({ where: { id: sessionId } });
         if (!account || !session) throw new UnauthorizedException('Not authenticated');
+
+        // update expire new threshold
+        await this.prisma.session.update({
+            where: { id: sessionId },
+            data: {
+                expire: dayjs().unix() + 60 * 60 * 24 * +(process.env.SESSION_EXPIRATION_OFFSET ?? 5),
+            },
+        });
 
         if (account.permissions.some(p => p.identifier == Utils.convertPermissionNameToIdent(SigAuthRootPermissions.ROOT))) {
             const [accounts, assets, assetTypes, apps, containers] = await Promise.all([
@@ -116,10 +122,21 @@ export class AuthService {
     }
 
     async authenticateOIDC(data: OIDCAuthenticateDto, sessionId: string) {
-        const session = await this.prisma.session.findFirst({ where: { sessionId }, include: { account: true } });
+        const session = await this.prisma.session.findFirst({ where: { id: sessionId }, include: { account: true } });
         if (!session) throw new NotFoundException("Couldn't resolve session");
 
+        const app = await this.prisma.app.findUnique({ where: { id: +data.appId } });
+        if (!app) throw new NotFoundException("Couldn't resolve app");
+
         const authorizationCode = Utils.generateToken(64);
-        // todo add to session obj in db
+        const challenge = await this.prisma.authorizationChallenge.create({
+            data: {
+                appId: +data.appId,
+                sessionId,
+                authorizationCode,
+            },
+        });
+
+        return `${app.oidcAuthCodeUrl}?code=${challenge.authorizationCode}&expires=${challenge.created.getTime() + 1000 * 60 * +(process.env.AUTHORIZATION_CHALLENGE_EXPIRATION_OFFSET ?? 5)}`;
     }
 }
